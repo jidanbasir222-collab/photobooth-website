@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Our Little Booth — A Little Place for Our Memories ♡{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-container">
+        <!-- Left Hero Content -->
+        <div class="hero-text-block">
+            <div class="scrapbook-badge">
+                <span class="badge-sparkle">✦</span>
+                <span>Virtual Sibling Photobooth</span>
+                <span class="badge-sparkle">✦</span>
+            </div>
+
+            <h1 class="hero-title">
+                A Little Place for <br>
+                <span class="highlight-serif">Our Memories</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                Two siblings, endless silly poses, and memories worth keeping. Grab your best poses, count down together, and print your digital photo strip!
+            </p>
+
+            <div class="hero-cta-group">
+                <a href="{{ url_for('booth') }}" class="btn-primary pulse-hover">
+                    <span class="btn-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                    </span>
+                    <span>Start Taking Photos</span>
+                </a>
+
+                <a href="#how-it-works" class="btn-secondary">
+                    <span>View How It Works</span>
+                    <span class="btn-arrow">↓</span>
+                </a>
+            </div>
+
+            <!-- Quick Features Highlights -->
+            <div class="hero-perks">
+                <div class="perk-item">
+                    <span class="perk-icon">✨</span>
+                    <span>8 Retro Filters</span>
+                </div>
+                <div class="perk-item">
+                    <span class="perk-icon">🎞️</span>
+                    <span>Classic Film Strips</span>
+                </div>
+                <div class="perk-item">
+                    <span class="perk-icon">🔒</span>
+                    <span>100% Private (Runs in Browser)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Hero: Vintage Photo Strip Display -->
+        <div class="hero-strip-wrapper">
+            <div class="washi-tape washi-tape-top" aria-hidden="true"></div>
+
+            <div class="sample-photostrip shadow-deep">
+                <!-- Film strip holes on sides -->
+                <div class="film-sprockets left-sprockets" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+
+                <div class="strip-inner">
+                    <div class="strip-header">
+                        <span class="strip-header-tag">OCTOBER 2026</span>
+                        <span class="strip-header-heart">♡</span>
+                    </div>
+
+                    <!-- Photo 1 -->
+                    <div class="sample-photo-box">
+                        <div class="sample-img sample-img-1">
+                            <div class="sample-avatar-pair">
+                                <span class="avatar-emoji">👧🏻</span>
+                                <span class="avatar-heart">💖</span>
+                                <span class="avatar-emoji">👦🏻</span>
+                            </div>
+                            <span class="sample-caption-tag">"Peace sign check!" ✌️</span>
+                        </div>
+                    </div>
+
+                    <!-- Photo 2 -->
+                    <div class="sample-photo-box">
+                        <div class="sample-img sample-img-2">
+                            <div class="sample-avatar-pair">
+                                <span class="avatar-emoji">😜</span>
+                                <span class="avatar-star">⭐</span>
+                                <span class="avatar-emoji">🤪</span>
+                            </div>
+                            <span class="sample-caption-tag">"Silly faces mode" 😝</span>
+                        </div>
+                    </div>
+
+                    <!-- Photo 3 -->
+                    <div class="sample-photo-box">
+                        <div class="sample-img sample-img-3">
+                            <div class="sample-avatar-pair">
+                                <span class="avatar-emoji">😎</span>
+                                <span class="avatar-sparkle">✨</span>
+                                <span class="avatar-emoji">🥳</span>
+                            </div>
+                            <span class="sample-caption-tag">"Partner in crime" 👑</span>
+                        </div>
+                    </div>
+
+                    <!-- Strip Footer -->
+                    <div class="sample-strip-footer">
+                        <p class="sample-footer-script">our little booth ♡</p>
+                        <p class="sample-footer-sub">Ahmad & Sis • Besties Forever</p>
+                    </div>
+                </div>
+
+                <div class="film-sprockets right-sprockets" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <!-- Mini Polaroid Accents Floating Behind -->
+            <div class="polaroid-accent polaroid-accent-1" aria-hidden="true">
+                <div class="mini-snap">🌸</div>
+                <span>xoxo</span>
+            </div>
+            <div class="polaroid-accent polaroid-accent-2" aria-hidden="true">
+                <div class="mini-snap">☀️</div>
+                <span>smiles!</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section: How It Works -->
+<section id="how-it-works" class="how-it-works-section">
+    <div class="section-container">
+        <div class="section-header text-center">
+            <span class="section-kicker">Simple & Fun</span>
+            <h2 class="section-title">How Our Booth Works</h2>
+            <div class="title-underline">
+                <span class="line"></span>
+                <span class="heart-symbol">♡</span>
+                <span class="line"></span>
+            </div>
+            <p class="section-desc">Snap your memories together in three effortless steps right from your laptop or phone camera!</p>
+        </div>
+
+        <div class="steps-grid">
+            <!-- Step 1 -->
+            <div class="step-card">
+                <div class="washi-tape washi-tape-card" aria-hidden="true"></div>
+                <div class="step-number-badge">1</div>
+                <div class="step-icon-wrapper">
+                    <span class="step-icon">⚙️</span>
+                </div>
+                <h3 class="step-title">Set Up Your Booth</h3>
+                <p class="step-text">
+                    Allow camera access with a single click. Choose between 3 or 4 photo strips, set mirror mode, switch cameras, and pick your favorite countdown timer (3s, 5s, or 10s).
+                </p>
+                <div class="step-tip">
+                    <span>💡 Tip:</span> 5-second countdown gives you just enough time to fix your hair and strike the pose!
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card featured-step">
+                <div class="washi-tape washi-tape-card" aria-hidden="true"></div>
+                <div class="step-number-badge">2</div>
+                <div class="step-icon-wrapper">
+                    <span class="step-icon">📸</span>
+                </div>
+                <h3 class="step-title">Strike a Pose</h3>
+                <p class="step-text">
+                    Watch the animated countdown on screen, hear the shutter click, and see your photo instantly. Love it? Keep it! Didn't like it? Tap retake without losing your progress.
+                </p>
+                <div class="step-tip">
+                    <span>💡 Tip:</span> Try matching poses: funny glasses, finger hearts, or goofy surprised faces!
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+                <div class="washi-tape washi-tape-card" aria-hidden="true"></div>
+                <div class="step-number-badge">3</div>
+                <div class="step-icon-wrapper">
+                    <span class="step-icon">🎀</span>
+                </div>
+                <h3 class="step-title">Save the Memories</h3>
+                <p class="step-text">
+                    Customize your strip! Pick vintage, black & white, or soft pink filters. Choose pastel backgrounds, add cute doodles and date stamps, then download a high-res PNG image.
+                </p>
+                <div class="step-tip">
+                    <span>💡 Tip:</span> Print your downloaded strip on photo paper for an authentic vintage scrapbook feel.
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action Banner -->
+        <div class="ready-banner">
+            <div class="ready-content">
+                <div class="ready-sparkles">✨ ✿ ✧</div>
+                <h3 class="ready-title">Ready to take some cute photos?</h3>
+                <p class="ready-subtitle">No sign up, no downloads required. Works right in your browser!</p>
+                <a href="{{ url_for('booth') }}" class="btn-primary btn-large">
+                    <span>Open Camera Studio Now</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

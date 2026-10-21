@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}Photobooth Studio — Our Little Booth ♡{% endblock %}
+
+{% block content %}
+<div class="booth-page-container">
+    <!-- Studio Header & Session Info Bar -->
+    <div class="booth-top-bar">
+        <div class="booth-top-left">
+            <a href="{{ url_for('index') }}" class="btn-text-back" id="btn-back-home" title="Return to Home">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Back to Home</span>
+            </a>
+            <div class="session-badge">
+                <span class="badge-dot"></span>
+                <span id="session-status-text">Studio Ready</span>
+            </div>
+        </div>
+
+        <div class="booth-top-center">
+            <h1 class="booth-heading">Our Little Studio</h1>
+        </div>
+
+        <div class="booth-top-right">
+            <button type="button" id="btn-reset-session" class="btn-icon-subtle" title="Reset Session" aria-label="Reset entire session">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <polyline points="23 20 23 14 17 14"></polyline>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                </svg>
+                <span>Reset</span>
+            </button>
+            <button type="button" id="btn-view-gallery" class="btn-icon-subtle" title="Session Gallery" aria-label="View recent photo strips">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Gallery</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Studio Layout: 2 Columns on Desktop (Camera View + Controls & Filmstrip) -->
+    <div class="studio-layout">
+        <!-- LEFT COLUMN: Live Camera Stage or Strip Customizer View -->
+        <div class="studio-stage-column">
+            <!-- CAMERA VIEW CONTAINER -->
+            <div id="camera-stage" class="camera-stage card-shadow">
+                <!-- Washi Tape Decor -->
+                <div class="washi-tape washi-tape-center" aria-hidden="true"></div>
+
+                <!-- Camera Viewport Box -->
+                <div class="viewport-wrapper" id="viewport-wrapper">
+                    <!-- Real HTML5 Video element -->
+                    <video id="webcam-video" autoplay playsinline muted></video>
+
+                    <!-- Hidden/Freeze Review Canvas for captured preview -->
+                    <canvas id="review-canvas" class="review-canvas is-hidden"></canvas>
+
+                    <!-- Camera Flash Overlay Effect -->
+                    <div id="camera-flash" class="camera-flash" aria-hidden="true"></div>
+
+                    <!-- Countdown Display Overlay -->
+                    <div id="countdown-overlay" class="countdown-overlay is-hidden" aria-live="assertive">
+                        <span id="countdown-number" class="countdown-number">3</span>
+                        <span id="countdown-smile" class="countdown-subtext">Get Ready! ♡</span>
+                    </div>
+
+                    <!-- Idle / Permission Needed Overlay -->
+                    <div id="camera-idle-screen" class="camera-screen-overlay">
+                        <div class="idle-content">
+                            <div class="idle-icon-pulse">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                    <circle cx="12" cy="13" r="3"/>
+                                </svg>
+                            </div>
+                            <h2 class="idle-title">Ready for Your Photoshoot?</h2>
+                            <p class="idle-desc">Click below to start your camera. We will ask for browser camera permission.</p>
+                            <button type="button" id="btn-start-camera" class="btn-primary btn-large pulse-btn">
+                                <span class="btn-icon">📸</span>
+                                <span>Start Camera</span>
+                            </button>
+                            <!-- Graceful fallback test mode if camera isn't attached -->
+                            <div class="fallback-note">
+                                <span>No webcam available?</span>
+                                <button type="button" id="btn-use-mock-mode" class="btn-text-link">Use Virtual Sibling Poses (Demo Mode)</button>
+                                <span>or</span>
+                                <label for="upload-photo-input" class="btn-text-link cursor-pointer">Upload a Photo</label>
+                                <input type="file" id="upload-photo-input" accept="image/*" class="is-hidden" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Camera Error / Permission Denied Overlay -->
+                    <div id="camera-error-screen" class="camera-screen-overlay is-hidden">
+                        <div class="error-content">
+                            <div class="error-icon-box">⚠️</div>
+                            <h2 class="error-title" id="camera-error-title">Camera Unavailable</h2>
+                            <p class="error-desc" id="camera-error-message">
+                                We couldn't access your camera. Please check your browser permission or make sure another app isn't using it.
+                            </p>
+                            <div class="error-actions">
+                                <button type="button" id="btn-retry-camera" class="btn-primary">
+                                    <span>Retry Camera</span>
+                                </button>
+                                <button type="button" id="btn-fallback-from-error" class="btn-secondary">
+                                    <span>Use Demo Avatar Poses</span>
+                                </button>
+                            </div>
+                            <p class="error-hint">Note: Webcams require <strong>localhost</strong> or <strong>HTTPS</strong> for security.</p>
+                        </div>
+                    </div>
+
+                    <!-- Review Overlay (Keep or Retake) -->
+                    <div id="review-action-overlay" class="review-action-overlay is-hidden">
+                        <div class="review-banner">
+                            <span class="review-title">How does this look?</span>
+                            <div class="review-btn-group">
+                                <button type="button" id="btn-retake-photo" class="btn-secondary btn-review">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="1 4 1 10 7 10"></polyline>
+                                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                    </svg>
+                                    <span>Retake Photo</span>
+                                </button>
+                                <button type="button" id="btn-keep-photo" class="btn-primary btn-review">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Keep Photo ♡</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Watermark / Cute Corner Stamps -->
+                    <div class="viewport-corner top-left" aria-hidden="true">✦</div>
+                    <div class="viewport-corner top-right" aria-hidden="true">✧</div>
+                </div>
+
+                <!-- Live Camera Controls Bar (under viewport) -->
+                <div class="camera-controls-bar">
+                    <!-- Left quick controls: Mirror & Flip -->
+                    <div class="control-group-left">
+                        <button type="button" id="btn-toggle-mirror" class="tool-btn active" title="Toggle Mirror View" aria-pressed="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                            <span>Mirror</span>
+                        </button>
+
+                        <button type="button" id="btn-flip-camera" class="tool-btn" title="Switch Front/Rear Camera" aria-label="Switch camera front or rear">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8c0 2.21 1.05 4.18 2.68 5.48"/>
+                                <path d="M4 14c0 4.418 3.582 8 8 8s8-3.582 8-8c0-2.21-1.05-4.18-2.68-5.48"/>
+                                <polyline points="4 20 4 14 10 14"/>
+                                <polyline points="20 4 20 10 14 10"/>
+                            </svg>
+                            <span>Flip</span>
+                        </button>
+
+                        <!-- Camera device selector (if multiple devices found) -->
+                        <div class="camera-select-wrapper" id="camera-select-container">
+                            <select id="camera-device-select" class="camera-select" title="Choose Camera">
+                                <option value="">Detecting cameras...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Center: Big Snappy Capture Button -->
+                    <div class="control-group-center">
+                        <button type="button" id="btn-capture-photo" class="capture-trigger-btn" aria-label="Capture photo now">
+                            <span class="outer-ring">
+                                <span class="inner-circle">📸</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Right quick controls: Countdown Selector -->
+                    <div class="control-group-right">
+                        <div class="countdown-selector-pill">
+                            <span class="timer-icon">⏱️</span>
+                            <div class="timer-options" role="radiogroup" aria-label="Countdown Timer">
+                                <button type="button" class="timer-opt" data-seconds="0" role="radio" aria-checked="false">Off</button>
+                                <button type="button" class="timer-opt active" data-seconds="3" role="radio" aria-checked="true">3s</button>
+                                <button type="button" class="timer-opt" data-seconds="5" role="radio" aria-checked="false">5s</button>
+                                <button type="button" class="timer-opt" data-seconds="10" role="radio" aria-checked="false">10s</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHOTO STRIP FINAL PREVIEW & CUSTOMIZER CANVAS STAGE (When all photos captured) -->
+            <div id="strip-stage" class="strip-stage card-shadow is-hidden">
+                <div class="washi-tape washi-tape-center" aria-hidden="true"></div>
+                <div class="strip-stage-header">
+                    <div>
+                        <h2 class="strip-stage-title">Your Strip is Ready! ✨</h2>
+                        <p class="strip-stage-sub">Customize the colors, layout, and stickers below.</p>
+                    </div>
+                    <button type="button" id="btn-back-to-camera" class="btn-secondary btn-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                        <span>Retake / Edit Photos</span>
+                    </button>
+                </div>
+
+                <!-- Real Interactive HTML Canvas Preview Container -->
+                <div class="canvas-preview-container">
+                    <canvas id="photo-strip-canvas" class="photo-strip-canvas"></canvas>
+                </div>
+
+                <!-- Export Action Buttons -->
+                <div class="strip-export-bar">
+                    <button type="button" id="btn-download-strip" class="btn-primary btn-large shadow-pop">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>Download Photo Strip (PNG)</span>
+                    </button>
+
+                    <button type="button" id="btn-download-singles" class="btn-secondary" title="Download each photo separately">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                        <span>Download Individual Photos</span>
+                    </button>
+
+                    <button type="button" id="btn-save-server-optin" class="btn-secondary" title="Save a copy to local server gallery">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        <span>Save to Server Gallery</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Session Progress, Filters, Layouts & Decorations -->
+        <aside class="studio-sidebar-column">
+            <!-- SESSION PROGRESS & THUMBNAILS CARD -->
+            <div class="sidebar-card card-shadow session-tracker-card">
+                <div class="card-header-row">
+                    <h3 class="sidebar-title">
+                        <span>Session Progress</span>
+                        <span class="heart-accent">♡</span>
+                    </h3>
+                    <span id="photo-progress-badge" class="progress-badge">Photo 1 of 4</span>
+                </div>
+
+                <!-- Number of photos selector (3 or 4 photos or 1 polaroid) -->
+                <div class="session-format-picker">
+                    <label class="setting-label">Strip Length:</label>
+                    <div class="format-options" role="radiogroup" aria-label="Photo Count">
+                        <button type="button" class="format-btn active" data-count="4">4 Photos</button>
+                        <button type="button" class="format-btn" data-count="3">3 Photos</button>
+                        <button type="button" class="format-btn" data-count="1">1 Polaroid</button>
+                    </div>
+                </div>
+
+                <!-- Captured Thumbnails Filmstrip Preview -->
+                <div class="thumbnails-filmstrip-wrapper">
+                    <div class="filmstrip-label">Captured Snaps:</div>
+                    <div id="thumbnails-container" class="thumbnails-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Strip Ready Action Trigger -->
+                <div class="create-strip-cta">
+                    <button type="button" id="btn-generate-strip-now" class="btn-primary btn-full pulse-btn" disabled>
+                        <span>✨ Create My Photo Strip</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTERS CARD -->
+            <div class="sidebar-card card-shadow filters-card">
+                <div class="card-header-row">
+                    <h3 class="sidebar-title">
+                        <span>Retro Filters</span>
+                        <span class="sparkle-accent">✨</span>
+                    </h3>
+                    <span id="active-filter-label" class="filter-name-tag">Vintage</span>
+                </div>
+
+                <div class="filter-intensity-row">
+                    <label for="filter-intensity-slider" class="setting-label">Intensity: <span id="intensity-val">85%</span></label>
+                    <input type="range" id="filter-intensity-slider" min="0" max="100" value="85" class="custom-range" />
+                </div>
+
+                <!-- Filter Preset Badges Grid with live previews -->
+                <div class="filters-grid" id="filters-grid" role="radiogroup" aria-label="Photo Filters">
+                    <!-- Javascript generates buttons with live CSS styles -->
+                </div>
+            </div>
+
+            <!-- STRIP CUSTOMIZATION CARD (Layouts, Colors, Stickers, Text) -->
+            <div class="sidebar-card card-shadow customizer-card">
+                <h3 class="sidebar-title">
+                    <span>Strip Styling</span>
+                    <span class="flower-accent">✿</span>
+                </h3>
+
+                <!-- Layout selector -->
+                <div class="customizer-group">
+                    <label class="setting-label">Layout Style:</label>
+                    <div class="layout-toggle-grid">
+                        <button type="button" class="layout-opt-btn active" data-layout="vertical-4">
+                            <span class="layout-icon">🎞️</span>
+                            <span>Vertical Strip</span>
+                        </button>
+                        <button type="button" class="layout-opt-btn" data-layout="grid-2x2">
+                            <span class="layout-icon">🔲</span>
+                            <span>2 × 2 Grid</span>
+                        </button>
+                        <button type="button" class="layout-opt-btn" data-layout="polaroid-single">
+                            <span class="layout-icon">📷</span>
+                            <span>Polaroid</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Background Color Palette -->
+                <div class="customizer-group">
+                    <label class="setting-label">Background Color:</label>
+                    <div class="color-swatches" id="color-swatches" role="radiogroup" aria-label="Background Color">
+                        <button type="button" class="color-swatch active" data-color="#FFF8EF" style="background-color: #FFF8EF;" title="Warm Cream" aria-label="Warm Cream"></button>
+                        <button type="button" class="color-swatch" data-color="#F5D9DC" style="background-color: #F5D9DC;" title="Blush Pink" aria-label="Blush Pink"></button>
+                        <button type="button" class="color-swatch" data-color="#FFFFFF" style="background-color: #FFFFFF;" title="Classic White" aria-label="Classic White"></button>
+                        <button type="button" class="color-swatch" data-color="#1E1A18" style="background-color: #1E1A18;" title="Vintage Noir Black" aria-label="Vintage Noir Black"></button>
+                        <button type="button" class="color-swatch" data-color="#E8E2F5" style="background-color: #E8E2F5;" title="Pastel Lavender" aria-label="Pastel Lavender"></button>
+                        <button type="button" class="color-swatch" data-color="#E2ECE4" style="background-color: #E2ECE4;" title="Soft Sage Mint" aria-label="Soft Sage Mint"></button>
+                    </div>
+                </div>
+
+                <!-- Vintage Borders & Film Holes -->
+                <div class="customizer-group">
+                    <label class="setting-label">Border & Frame Style:</label>
+                    <div class="toggle-checkbox-row">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-film-sprockets" checked />
+                            <span class="toggle-text">Film Sprocket Holes</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-rounded-corners" checked />
+                            <span class="toggle-text">Soft Rounded Photos</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-washi-tape" checked />
+                            <span class="toggle-text">Cute Washi Tape</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Photo Spacing Slider -->
+                <div class="customizer-group">
+                    <label for="spacing-slider" class="setting-label">Photo Spacing: <span id="spacing-val">Medium</span></label>
+                    <input type="range" id="spacing-slider" min="10" max="60" value="30" class="custom-range" />
+                </div>
+
+                <!-- Custom Captions & Nicknames -->
+                <div class="customizer-group">
+                    <label for="session-title-input" class="setting-label">Session Title / Header:</label>
+                    <input type="text" id="session-title-input" class="custom-input" placeholder="our little booth ♡" value="our little booth ♡" maxlength="35" />
+                </div>
+
+                <div class="customizer-group">
+                    <label for="siblings-nicknames-input" class="setting-label">Siblings' Nicknames:</label>
+                    <input type="text" id="siblings-nicknames-input" class="custom-input" placeholder="e.g. Ahmad & Sis" value="Ahmad & Sis" maxlength="30" />
+                </div>
+
+                <div class="customizer-group">
+                    <label for="session-footer-input" class="setting-label">Footer Note:</label>
+                    <input type="text" id="session-footer-input" class="custom-input" placeholder="our little memories ♡" value="our little memories ♡" maxlength="40" />
+                </div>
+
+                <div class="customizer-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="toggle-date-stamp" checked />
+                        <span class="toggle-text">Include Today's Date Stamp (<span id="today-date-text">2026.10.21</span>)</span>
+                    </label>
+                </div>
+
+                <!-- Stickers & Doodles -->
+                <div class="customizer-group">
+                    <div class="stickers-header-row">
+                        <label class="setting-label">Cute Stickers & Doodles:</label>
+                        <label class="toggle-label inline-toggle">
+                            <input type="checkbox" id="toggle-stickers-enabled" checked />
+                            <span class="toggle-text">Enable</span>
+                        </label>
+                    </div>
+                    <div class="sticker-selector-grid" id="sticker-selector-grid">
+                        <button type="button" class="sticker-chip active" data-sticker-set="hearts">❤️ Hearts & Blushes</button>
+                        <button type="button" class="sticker-chip" data-sticker-set="stars">⭐ Stars & Sparkles</button>
+                        <button type="button" class="sticker-chip" data-sticker-set="flowers">🌸 Flowers & Daisies</button>
+                        <button type="button" class="sticker-chip" data-sticker-set="smiles">😊 Silly Smiles</button>
+                        <button type="button" class="sticker-chip" data-sticker-set="all">✨ Cute Mix</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Modal: Session Gallery -->
+<div id="gallery-modal" class="modal-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="gallery-modal-title">
+    <div class="modal-box card-shadow">
+        <div class="modal-header">
+            <h2 id="gallery-modal-title" class="modal-title">Saved Photo Strips ♡</h2>
+            <button type="button" id="btn-close-gallery" class="modal-close-btn" aria-label="Close Gallery">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="gallery-grid" class="gallery-grid">
+                <!-- Loaded from localStorage / server -->
+            </div>
+            <div id="gallery-empty-state" class="empty-state">
+                <span class="empty-icon">🎞️</span>
+                <p>No photo strips saved yet. Complete a session and download or save your strip!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-clear-local-gallery" class="btn-text-danger">Clear Session Gallery</button>
+            <button type="button" id="btn-done-gallery" class="btn-primary">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmation for Reset -->
+<div id="reset-confirm-modal" class="modal-backdrop is-hidden" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-sm card-shadow text-center">
+        <div class="modal-warning-icon">🗑️</div>
+        <h3 class="modal-title">Start a New Session?</h3>
+        <p class="modal-desc">This will clear your current photos in progress. Any saved photo strips will remain safe.</p>
+        <div class="modal-actions-centered">
+            <button type="button" id="btn-cancel-reset" class="btn-secondary">Keep Working</button>
+            <button type="button" id="btn-confirm-reset" class="btn-danger">Yes, Reset Session</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confetti Celebration Canvas Overlay -->
+<canvas id="confetti-canvas" class="confetti-canvas is-hidden" aria-hidden="true"></canvas>
+
+<!-- Toast Notifications -->
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo-strip.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photobooth.js') }}"></script>
+{% endblock %}

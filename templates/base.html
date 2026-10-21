@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Our Little Booth — Virtual Online Photobooth{% endblock %}</title>
+    <meta name="description" content="A cute, cozy virtual photobooth for two siblings to take photos together and create vintage photo strips.">
+    <!-- Google Fonts: Playfair Display for headings, Plus Jakarta Sans for body, Caveat for handwritten notes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="scrapbook-bg">
+    <!-- Paper texture & decorative floating doodles -->
+    <div class="paper-texture-overlay" aria-hidden="true"></div>
+    <div class="floating-doodle doodle-star-1" aria-hidden="true">✦</div>
+    <div class="floating-doodle doodle-heart-1" aria-hidden="true">♡</div>
+    <div class="floating-doodle doodle-sparkle-1" aria-hidden="true">✧</div>
+    <div class="floating-doodle doodle-flower-1" aria-hidden="true">✿</div>
+    <div class="floating-doodle doodle-heart-2" aria-hidden="true">♡</div>
+    <div class="floating-doodle doodle-star-2" aria-hidden="true">★</div>
+
+    <!-- Navigation Bar -->
+    <header class="site-header">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="site-logo">
+                <span class="logo-camera-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                        <circle cx="12" cy="13" r="3"/>
+                    </svg>
+                </span>
+                <span class="logo-text">our little booth <span class="logo-heart">♡</span></span>
+            </a>
+
+            <nav class="site-nav">
+                <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('index') }}#how-it-works" class="nav-link">How It Works</a>
+                <a href="{{ url_for('booth') }}" class="nav-btn-booth">
+                    <span class="nav-btn-icon">📸</span>
+                    <span>Open Photobooth</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-tape" aria-hidden="true"></div>
+            <p class="footer-quote">"Two siblings, endless silly poses, and memories worth keeping."</p>
+            <p class="footer-love">Made with love, just for us <span class="heart-pulse">♡</span></p>
+            <div class="footer-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <span class="dot-separator">•</span>
+                <a href="{{ url_for('booth') }}">Photobooth Studio</a>
+                <span class="dot-separator">•</span>
+                <a href="{{ url_for('health') }}" target="_blank">Health Check</a>
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
