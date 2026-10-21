@@ -1,25 +1,57 @@
 """
 Our Little Booth — Virtual Online Photobooth
 Backend Application (Flask)
+Compatible with both Localhost and Vercel Serverless Environments
 """
 
 import os
 import re
 import uuid
 import base64
+import tempfile
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Flask, render_template, jsonify, request, send_from_directory, abort
 from PIL import Image
 
-app = Flask(__name__)
+# Absolute paths for templates and static assets to ensure compatibility with
+# both standard Python runtimes and Vercel Serverless Functions (api/index.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+
+app = Flask(
+    __name__,
+    template_folder=TEMPLATES_DIR,
+    static_folder=STATIC_DIR,
+    static_url_path='/static'
+)
 
 # Configurations
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'our-little-booth-secret-2026')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max payload limit
-INSTANCE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
-SAVED_STRIPS_DIR = os.path.join(INSTANCE_DIR, 'saved_strips')
-os.makedirs(SAVED_STRIPS_DIR, exist_ok=True)
+
+# Storage handling:
+# On serverless platforms like Vercel / AWS Lambda, the deployment directory is READ-ONLY.
+# We first attempt to use the local instance folder; if read-only, safely fall back to /tmp.
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+LOCAL_SAVED_DIR = os.path.join(INSTANCE_DIR, 'saved_strips')
+
+try:
+    os.makedirs(LOCAL_SAVED_DIR, exist_ok=True)
+    # Test write permissions to verify we are not in a read-only filesystem
+    test_path = os.path.join(LOCAL_SAVED_DIR, '.write_test')
+    with open(test_path, 'w') as f:
+        f.write('ok')
+    os.remove(test_path)
+    SAVED_STRIPS_DIR = LOCAL_SAVED_DIR
+except (OSError, PermissionError):
+    # Fallback to serverless writable scratch directory (/tmp)
+    SAVED_STRIPS_DIR = os.path.join(tempfile.gettempdir(), 'saved_strips')
+    try:
+        os.makedirs(SAVED_STRIPS_DIR, exist_ok=True)
+    except Exception:
+        SAVED_STRIPS_DIR = tempfile.gettempdir()
 
 
 @app.route('/')
@@ -41,15 +73,15 @@ def health():
         "status": "ok",
         "app": "Our Little Booth",
         "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat() + "Z"
+        "timestamp": datetime.now(timezone.utc).isoformat()
     })
 
 
 @app.route('/api/save-strip', methods=['POST'])
 def save_strip():
     """
-    Opt-in endpoint to save a photo strip to the local server.
-    Validates base64 image data, verifies safety with Pillow, and saves locally.
+    Opt-in endpoint to save a photo strip to the server.
+    Validates base64 image data, verifies safety with Pillow, and saves locally or in /tmp.
     """
     try:
         data = request.get_json(silent=True)
@@ -97,7 +129,7 @@ def save_strip():
             "success": True,
             "filename": filename,
             "url": f"/api/saved/{filename}",
-            "message": "Photo strip safely saved to local server gallery!"
+            "message": "Photo strip safely saved to server gallery!"
         })
 
     except Exception as e:
@@ -105,18 +137,20 @@ def save_strip():
         return jsonify({"error": "Server failed to save photo strip"}), 500
 
 
-@app.route('/api/saved/<filename>')
+@app.route('/api/saved/<path:filename>')
 def get_saved_strip(filename):
-    """Safely serves saved photo strips from the instance directory."""
+    """Safely serves saved photo strips from the saved directory."""
     # Prevent directory traversal
-    if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
+    if '..' in filename or filename.startswith('/') or filename.startswith('\\') or ':' in filename:
         abort(400)
+    if not os.path.exists(SAVED_STRIPS_DIR):
+        abort(404)
     return send_from_directory(SAVED_STRIPS_DIR, filename)
 
 
 @app.route('/api/gallery')
 def list_saved_gallery():
-    """Lists locally saved strips for the session."""
+    """Lists saved strips for the session."""
     try:
         files = []
         if os.path.exists(SAVED_STRIPS_DIR):

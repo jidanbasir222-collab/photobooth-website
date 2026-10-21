@@ -1,0 +1,9 @@
+.venv
+venv
+__pycache__
+*.pyc
+.git
+.gitignore
+tests
+instance/saved_strips/*
+!instance/.gitkeep

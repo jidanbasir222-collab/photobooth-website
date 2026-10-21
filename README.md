@@ -104,7 +104,12 @@ Modern web browsers enforce strict security policies regarding camera and microp
 
 ```text
 photoboth/
+├── api/
+│   └── index.py                # Vercel Serverless Function entry point
 ├── app.py                      # Flask server routes, health check, and secure save API
+├── vercel.json                 # Vercel URL rewrites routing to api/index.py
+├── .python-version             # Python version pin (3.11)
+├── .vercelignore               # Vercel deployment exclude rules
 ├── requirements.txt            # Python dependencies (Flask, Pillow, Werkzeug)
 ├── README.md                   # Complete documentation and run instructions
 ├── instance/
@@ -122,6 +127,30 @@ photoboth/
         ├── filters.js          # 8 retro filter algorithms (CSS + Canvas export)
         ├── photo-strip.js      # Canvas composition engine (layouts, borders, stickers, export)
         └── photobooth.js       # Session state, countdown, review, audio, and UI controller
+```
+
+---
+
+## ☁️ Vercel Deployment & Redeploy Guide
+
+This repository is optimized for Vercel Serverless Functions:
+- `api/index.py` exports the Flask `app` WSGI callable.
+- `vercel.json` rewrites all requests (`/(.*)`) to `/api/index`.
+- Serverless read-only filesystem is handled with an automatic `/tmp` fallback for temporary file generation.
+
+### Redeploy Steps via GitHub:
+1. Stage and commit your changes:
+   ```bash
+   git add .
+   git commit -m "Fix Vercel serverless deployment and entry points"
+   git push origin main
+   ```
+2. Vercel automatically detects the push and triggers a new build.
+
+### Redeploy Steps via Vercel CLI:
+```bash
+npm install -g vercel
+vercel --prod
 ```
 
 ---
