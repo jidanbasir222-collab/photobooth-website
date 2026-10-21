@@ -77,6 +77,18 @@ def health():
     })
 
 
+@app.route('/favicon.ico')
+@app.route('/favicon.png')
+def favicon():
+    """Serve a camera favicon to avoid 404/500 on browser default requests."""
+    svg_favicon = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#74564A"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3" fill="#F5D9DC"/></svg>"""
+    return svg_favicon, 200, {
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "public, max-age=86400"
+    }
+
+
+
 @app.route('/api/save-strip', methods=['POST'])
 def save_strip():
     """

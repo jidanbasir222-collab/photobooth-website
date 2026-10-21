@@ -1,0 +1,24 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Local saved strips
+instance/saved_strips/*
+!instance/.gitkeep
+
+# Testing & temp
+.pytest_cache/
+.coverage
+
+# IDEs & OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
