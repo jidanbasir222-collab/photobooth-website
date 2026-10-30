@@ -433,6 +433,43 @@ def leave_room(room_id):
     return jsonify({"success": True})
 
 
+@app.route('/api/turn-credentials', methods=['GET'])
+def get_turn_credentials():
+    """
+    Return WebRTC STUN and TURN server configurations for Carrier-Grade NAT traversal.
+    Supports optional environment variables (TURN_URL, TURN_USERNAME, TURN_CREDENTIAL).
+    """
+    turn_urls = os.environ.get('TURN_URLS') or os.environ.get('TURN_URL')
+    turn_user = os.environ.get('TURN_USERNAME') or os.environ.get('TURN_USER')
+    turn_pass = os.environ.get('TURN_CREDENTIAL') or os.environ.get('TURN_PASSWORD')
+
+    ice_servers = [
+        {"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]},
+        {"urls": ["stun:stun.cloudflare.com:3478"]},
+        {"urls": ["stun:stun.services.mozilla.com"]},
+        {
+            "urls": [
+                "turn:openrelay.metered.ca:80",
+                "turn:openrelay.metered.ca:443",
+                "turn:openrelay.metered.ca:443?transport=tcp"
+            ],
+            "username": "openrelay",
+            "credential": "openrelay"
+        }
+    ]
+
+    if turn_urls:
+        urls_list = [u.strip() for u in turn_urls.split(',') if u.strip()]
+        custom_turn = {"urls": urls_list}
+        if turn_user:
+            custom_turn["username"] = turn_user
+        if turn_pass:
+            custom_turn["credential"] = turn_pass
+        ice_servers.insert(0, custom_turn)
+
+    return jsonify({"iceServers": ice_servers})
+
+
 # --------------------------------------------------------------------------
 # Opt-in Photo Strip Storage & Gallery
 # --------------------------------------------------------------------------

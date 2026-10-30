@@ -143,5 +143,15 @@ class TestLittleMemories(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
 
 
+    def test_turn_credentials_endpoint(self):
+        """Verify WebRTC STUN/TURN configuration endpoint returns valid iceServers."""
+        response = self.client.get('/api/turn-credentials')
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn('iceServers', data)
+        self.assertIsInstance(data['iceServers'], list)
+        self.assertGreaterEqual(len(data['iceServers']), 2)
+
+
 if __name__ == '__main__':
     unittest.main()

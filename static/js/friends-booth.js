@@ -175,8 +175,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 const v = box.querySelector('video');
                 if (v) {
-                    v.srcObject = stream;
-                    v.play().catch(e => {});
+                    v.playsInline = true;
+                    v.setAttribute('playsinline', '');
+                    v.setAttribute('webkit-playsinline', '');
+                    if (v.srcObject !== stream) {
+                        v.srcObject = stream;
+                    }
+                    const p = v.play();
+                    if (p !== undefined) {
+                        p.catch(() => {
+                            v.muted = true;
+                            v.play().catch(e => console.warn('Squad video play error:', e));
+                        });
+                    }
                 }
             },
             onCountdownStarted: (targetTime, duration, shotsCount, shotIndex) => {

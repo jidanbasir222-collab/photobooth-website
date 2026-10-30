@@ -182,10 +182,78 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     localNickDisplay.textContent = nickname;
 
-    // Room Manager
+    const audioPrompt = document.getElementById('audio-unmute-prompt');
+    function showAudioUnmutePrompt() {
+        if (audioPrompt) audioPrompt.classList.remove('is-hidden');
+    }
+    function hideAudioUnmutePrompt() {
+        if (audioPrompt) audioPrompt.classList.add('is-hidden');
+    }
+
+    // Auto-unmute remote audio on any user interaction with the document
+    const unmuteOnInteraction = () => {
+        if (remoteVideo && remoteVideo.muted) {
+            remoteVideo.muted = false;
+            console.log('[LDR Studio] Remote video unmuted on user tap/click.');
+            hideAudioUnmutePrompt();
+        }
+    };
+    document.addEventListener('click', unmuteOnInteraction, { passive: true });
+    document.addEventListener('touchstart', unmuteOnInteraction, { passive: true });
+
+    // Developer Diagnostic Panel elements
+    const diagPanel = document.getElementById('diagnostics-panel');
+    const diagContent = document.getElementById('diag-content');
+    const btnToggleDiag = document.getElementById('btn-toggle-diagnostics');
+    const btnCloseDiag = document.getElementById('btn-close-diagnostics');
+
+    if (btnToggleDiag && diagPanel) {
+        btnToggleDiag.addEventListener('click', () => {
+            diagPanel.classList.toggle('is-hidden');
+            if (webrtc) updateDiagnosticsUI(webrtc.getDiagnostics());
+        });
+    }
+    if (btnCloseDiag && diagPanel) {
+        btnCloseDiag.addEventListener('click', () => {
+            diagPanel.classList.add('is-hidden');
+        });
+    }
+
+    function updateDiagnosticsUI(diag) {
+        if (!diagContent || !diag) return;
+        const peer = diag.peers && diag.peers[0];
+        diagContent.innerHTML = `
+            <div class="diag-grid">
+                <div class="diag-item"><strong>Room ID:</strong> <span>${diag.roomId || '-'}</span></div>
+                <div class="diag-item"><strong>My Peer ID:</strong> <span>${diag.peerId || '-'} (${diag.isHost ? 'Host' : 'Guest'})</span></div>
+                <div class="diag-item"><strong>Local Stream:</strong> <span class="${diag.localStreamActive ? 'status-ok' : 'status-bad'}">${diag.localStreamActive ? 'Active' : 'Inactive'}</span></div>
+                <div class="diag-item"><strong>Local Video Track:</strong> <span>${diag.localVideoTrackState}</span></div>
+                <div class="diag-item"><strong>Local Audio Track:</strong> <span>${diag.localAudioTrackState}</span></div>
+                <div class="diag-divider"></div>
+                <div class="diag-item"><strong>Remote Peer ID:</strong> <span>${peer ? peer.remoteId : 'Waiting...'}</span></div>
+                <div class="diag-item"><strong>P2P Connection:</strong> <span class="badge-conn-${peer?.connectionState}">${peer?.connectionState || 'none'}</span></div>
+                <div class="diag-item"><strong>ICE Connection:</strong> <span>${peer?.iceConnectionState || 'none'}</span></div>
+                <div class="diag-item"><strong>ICE Gathering:</strong> <span>${peer?.iceGatheringState || 'none'}</span></div>
+                <div class="diag-item"><strong>Signaling State:</strong> <span>${peer?.signalingState || 'none'}</span></div>
+                <div class="diag-item"><strong>DataChannel:</strong> <span>${peer?.dataChannelState || 'none'}</span></div>
+                <div class="diag-item"><strong>Recv Audio Tracks:</strong> <span>${peer?.receivedAudioTracks || 0} (${peer?.remoteAudioTrackState || '-'})</span></div>
+                <div class="diag-item"><strong>Recv Video Tracks:</strong> <span>${peer?.receivedVideoTracks || 0} (${peer?.remoteVideoTrackState || '-'})</span></div>
+                <div class="diag-item"><strong>Queued ICE:</strong> <span>${peer?.queuedIceCount || 0}</span></div>
+            </div>
+        `;
+    }
+
     let webrtc = null;
 
     async function initRoom() {
+        // Prepare video elements for iOS Safari / Android Chrome inline playback
+        remoteVideo.playsInline = true;
+        remoteVideo.setAttribute('playsinline', '');
+        remoteVideo.setAttribute('webkit-playsinline', '');
+        localVideo.playsInline = true;
+        localVideo.setAttribute('playsinline', '');
+        localVideo.setAttribute('webkit-playsinline', '');
+
         if (!roomId) {
             // Prompt to create or join room
             const code = prompt('Enter LDR Room Code (or leave empty to create new room):', '');
@@ -234,10 +302,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             onPeerJoined: (remoteId, name) => {
                 partnerName = name;
                 remoteNickDisplay.textContent = name;
-                remotePlaceholder.classList.add('is-hidden');
-                sessionStatusText.textContent = `Connected with ${name} ❤️`;
-                connectionDot.style.background = '#5CB85C';
-                showToast(`${name} joined your private room! ❤️`, '🎉');
+                sessionStatusText.textContent = `${name} joining room...`;
+                connectionDot.style.background = '#F0AD4E';
+                showToast(`${name} joined your private room! Connecting live video...`, '💌');
                 SoundEffects.playSuccess();
             },
             onPeerLeft: (remoteId, name) => {
@@ -249,19 +316,50 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(`${name} disconnected`, '⚠️');
             },
             onRemoteStream: (remoteId, stream, name) => {
-                remoteVideo.srcObject = stream;
-                remoteVideo.play().catch(e => {});
-                remotePlaceholder.classList.add('is-hidden');
+                console.log('[LDR Studio] Received remote stream tracks:', stream.getTracks().map(t => `${t.kind}:${t.readyState}`));
                 partnerName = name || partnerName;
                 remoteNickDisplay.textContent = partnerName;
-                sessionStatusText.textContent = `Live with ${partnerName} ❤️`;
-                connectionDot.style.background = '#5CB85C';
-            },
-            onConnectionState: (remoteId, state) => {
-                if (state === 'connected') {
-                    sessionStatusText.textContent = `Live with ${partnerName} ❤️`;
-                    connectionDot.style.background = '#5CB85C';
+                remotePlaceholder.classList.add('is-hidden');
+
+                if (remoteVideo.srcObject !== stream) {
+                    remoteVideo.srcObject = stream;
+                    console.log('[LDR Studio] Attached remote stream to remoteVideo element.');
                 }
+
+                // Robust play promise with autoplay restriction handling
+                const playPromise = remoteVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('[LDR Studio] Remote video playing with sound.');
+                        hideAudioUnmutePrompt();
+                    }).catch(err => {
+                        console.warn('[LDR Studio] Unmuted video play blocked by browser policy:', err.name);
+                        // Fallback: Mute remoteVideo so visual frames render immediately
+                        remoteVideo.muted = true;
+                        remoteVideo.play().then(() => {
+                            console.log('[LDR Studio] Remote video playing muted to bypass autoplay policy.');
+                            showAudioUnmutePrompt();
+                        }).catch(e => console.error('[LDR Studio] Failed playing remote video even muted:', e));
+                    });
+                }
+            },
+            onConnectionState: (remoteId, connState) => {
+                console.log(`[LDR Studio] P2P Connection state: ${connState}`);
+                if (connState === 'connected') {
+                    sessionStatusText.textContent = `Connected with ${partnerName} ❤️`;
+                    connectionDot.style.background = '#5CB85C';
+                    remotePlaceholder.classList.add('is-hidden');
+                    showToast(`Live video connected with ${partnerName}! ❤️`, '🎉');
+                } else if (connState === 'connecting') {
+                    sessionStatusText.textContent = `Connecting with ${partnerName}...`;
+                    connectionDot.style.background = '#F0AD4E';
+                } else if (connState === 'failed' || connState === 'disconnected') {
+                    sessionStatusText.textContent = `Connection lost. Reconnecting...`;
+                    connectionDot.style.background = '#D9534F';
+                }
+            },
+            onDiagnosticsUpdate: (diag) => {
+                updateDiagnosticsUI(diag);
             },
             onCountdownStarted: (targetTime, duration, shotsCount, shotIndex) => {
                 runSynchronizedCountdown(targetTime, duration, shotsCount, shotIndex);

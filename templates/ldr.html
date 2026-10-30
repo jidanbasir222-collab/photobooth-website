@@ -25,6 +25,9 @@
         </div>
 
         <div class="booth-top-right">
+            <button type="button" id="btn-toggle-diagnostics" class="btn-icon-subtle" title="WebRTC Diagnostics">
+                <span>🛠️ Diag</span>
+            </button>
             <button type="button" id="btn-copy-invite" class="btn-icon-subtle" title="Copy Invite Link">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -72,7 +75,10 @@
                             <span class="feed-dot" id="remote-feed-dot"></span>
                             <span id="remote-nickname-display">Waiting for your sweetheart...</span>
                         </div>
-                        <video id="remote-video" autoplay playsinline></video>
+                        <video id="remote-video" autoplay playsinline webkit-playsinline></video>
+                        <div id="audio-unmute-prompt" class="audio-unmute-pill is-hidden">
+                            <span>🔊 Tap screen to unmute partner</span>
+                        </div>
                         <canvas id="remote-canvas-freeze" class="review-canvas is-hidden"></canvas>
                         <div class="video-placeholder" id="remote-placeholder">
                             <div class="idle-icon-pulse">💌</div>
@@ -320,6 +326,17 @@
                 </div>
             </div>
         </aside>
+    </div>
+</div>
+
+<!-- Developer Diagnostics Drawer -->
+<div id="diagnostics-panel" class="diagnostics-panel is-hidden" aria-modal="true" role="dialog">
+    <div class="diag-header">
+        <h4>🛠️ WebRTC Live Diagnostics</h4>
+        <button type="button" id="btn-close-diagnostics" class="btn-text-link">Close ✕</button>
+    </div>
+    <div class="diag-body" id="diag-content">
+        <p>Connecting WebRTC diagnostics...</p>
     </div>
 </div>
 
