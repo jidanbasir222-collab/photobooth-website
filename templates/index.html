@@ -1,53 +1,53 @@
 {% extends "base.html" %}
 
-{% block title %}Our Little Booth — A Little Place for Our Memories ♡{% endblock %}
+{% block title %}Little Memories — Every moment deserves a picture ♡{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-container">
         <!-- Left Hero Content -->
         <div class="hero-text-block">
             <div class="scrapbook-badge">
                 <span class="badge-sparkle">✦</span>
-                <span>Virtual Sibling Photobooth</span>
+                <span>Virtual Online Photobooth</span>
                 <span class="badge-sparkle">✦</span>
             </div>
 
             <h1 class="hero-title">
-                A Little Place for <br>
-                <span class="highlight-serif">Our Memories</span>
+                Little Memories <br>
+                <span class="highlight-serif">Every Moment Deserves a Picture</span>
             </h1>
 
             <p class="hero-subtitle">
-                Two siblings, endless silly poses, and memories worth keeping. Grab your best poses, count down together, and print your digital photo strip!
+                Your own cozy photobooth, wherever we are. Capture silly poses, count down together, and print vintage digital photostrips — whether you're cuddled on the same couch or miles apart.
             </p>
 
             <div class="hero-cta-group">
-                <a href="{{ url_for('booth') }}" class="btn-primary pulse-hover">
-                    <span class="btn-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                            <circle cx="12" cy="13" r="4"/>
-                        </svg>
-                    </span>
-                    <span>Start Taking Photos</span>
+                <a href="#mode-selection" class="btn-primary pulse-hover">
+                    <span class="btn-icon">📸</span>
+                    <span>Choose Your Photobooth</span>
                 </a>
 
                 <a href="#how-it-works" class="btn-secondary">
-                    <span>View How It Works</span>
+                    <span>How It Works</span>
                     <span class="btn-arrow">↓</span>
                 </a>
             </div>
 
-            <!-- Quick Features Highlights -->
+            <!-- Perks Highlights -->
             <div class="hero-perks">
                 <div class="perk-item">
-                    <span class="perk-icon">✨</span>
-                    <span>8 Retro Filters</span>
+                    <span class="perk-icon">❤️</span>
+                    <span>LDR Couple Rooms</span>
                 </div>
                 <div class="perk-item">
-                    <span class="perk-icon">🎞️</span>
-                    <span>Classic Film Strips</span>
+                    <span class="perk-icon">👥</span>
+                    <span>Friends Squad Mode</span>
+                </div>
+                <div class="perk-item">
+                    <span class="perk-icon">✨</span>
+                    <span>8 Retro Filters & Stickers</span>
                 </div>
                 <div class="perk-item">
                     <span class="perk-icon">🔒</span>
@@ -80,7 +80,7 @@
                                 <span class="avatar-heart">💖</span>
                                 <span class="avatar-emoji">👦🏻</span>
                             </div>
-                            <span class="sample-caption-tag">"Peace sign check!" ✌️</span>
+                            <span class="sample-caption-tag">"Together across the miles" ✌️</span>
                         </div>
                     </div>
 
@@ -92,7 +92,7 @@
                                 <span class="avatar-star">⭐</span>
                                 <span class="avatar-emoji">🤪</span>
                             </div>
-                            <span class="sample-caption-tag">"Silly faces mode" 😝</span>
+                            <span class="sample-caption-tag">"Silly faces check!" 😝</span>
                         </div>
                     </div>
 
@@ -104,14 +104,14 @@
                                 <span class="avatar-sparkle">✨</span>
                                 <span class="avatar-emoji">🥳</span>
                             </div>
-                            <span class="sample-caption-tag">"Partner in crime" 👑</span>
+                            <span class="sample-caption-tag">"Best memories forever" 👑</span>
                         </div>
                     </div>
 
                     <!-- Strip Footer -->
                     <div class="sample-strip-footer">
-                        <p class="sample-footer-script">our little booth ♡</p>
-                        <p class="sample-footer-sub">Ahmad & Sis • Besties Forever</p>
+                        <p class="sample-footer-script">Little Memories ♡</p>
+                        <p class="sample-footer-sub">Distance Means So Little ♡</p>
                     </div>
                 </div>
 
@@ -133,18 +133,116 @@
     </div>
 </section>
 
+<!-- Dual-Mode Photobooth Selection Section -->
+<section id="mode-selection" class="dual-modes-section">
+    <div class="section-header text-center">
+        <span class="section-kicker">Choose Your Experience</span>
+        <h2 class="section-title">Two Ways to Make Memories</h2>
+        <div class="title-underline">
+            <span class="line"></span>
+            <span class="heart-symbol">♡</span>
+            <span class="line"></span>
+        </div>
+        <p class="section-desc">Select the perfect photobooth mode for you and your favorite people.</p>
+    </div>
+
+    <div class="mode-cards-grid">
+        <!-- MODE 1: LDR PHOTOBOOTH -->
+        <div class="mode-card mode-card-ldr">
+            <div class="washi-tape washi-tape-card" aria-hidden="true"></div>
+            <div>
+                <div class="mode-header">
+                    <span class="mode-badge mode-badge-ldr">❤️ For Couples Across Distance</span>
+                    <h3 class="mode-title">LDR Photobooth</h3>
+                    <p class="mode-tagline">“Just you and me, wherever we are.”</p>
+                    <p class="mode-desc">
+                        Connect two devices (phone and laptop) in a private couple room. See and hear each other live with WebRTC, count down together in sync, and print your shared couple photostrip!
+                    </p>
+                </div>
+
+                <ul class="mode-features-list">
+                    <li><span>🔒</span> <strong>Private 2-Person Room:</strong> Shareable unguessable invite link</li>
+                    <li><span>📹</span> <strong>Live Video & Audio:</strong> Direct peer-to-peer WebRTC streaming</li>
+                    <li><span>⏱️</span> <strong>Synchronized Countdown:</strong> Both cameras snap in harmony</li>
+                    <li><span>🎞️</span> <strong>Shared Couple Strip:</strong> Combined into one vintage PNG keepsake</li>
+                </ul>
+            </div>
+
+            <div class="mode-actions-stack">
+                <button type="button" class="btn-primary btn-large btn-full" id="btn-open-create-ldr">
+                    <span>❤️ Create Our Room</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                <button type="button" class="btn-secondary btn-full" id="btn-open-join-ldr">
+                    <span>🔗 Join with an Invite Link</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MODE 2: FRIENDS PHOTOBOOTH -->
+        <div class="mode-card mode-card-friends">
+            <div class="washi-tape washi-tape-card" aria-hidden="true"></div>
+            <div>
+                <div class="mode-header">
+                    <span class="mode-badge mode-badge-friends">👥 Besties & Squads</span>
+                    <h3 class="mode-title">Friends Photobooth</h3>
+                    <p class="mode-tagline">“Make memories together.”</p>
+                    <p class="mode-desc">
+                        Designed for groups! Choose between gathering in front of one camera or connecting with friends in different locations.
+                    </p>
+                </div>
+
+                <!-- Sub-modes clearly presented -->
+                <div class="mode-split-options">
+                    <div class="sub-option-item">
+                        <span class="sub-option-title">📸 Local Mode (In One Place)</span>
+                        <p class="sub-option-desc">Pose together in front of one phone or laptop camera. Instant filters, stamps, and no call setup needed!</p>
+                    </div>
+                    <div class="sub-option-item">
+                        <span class="sub-option-title">🌐 Remote Mode (Different Locations)</span>
+                        <p class="sub-option-desc">Friends join a private room from their own devices. Synchronized group countdown and composite squad strip!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mode-actions-stack">
+                <a href="{{ url_for('friends_local') }}" class="btn-primary btn-large btn-full">
+                    <span>📸 Launch Local Friends Booth</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <button type="button" class="btn-secondary btn-full" id="btn-open-friends-remote">
+                    <span>🌐 Open Remote Friends Room</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section: Privacy Notice -->
+<section class="privacy-section">
+    <div class="privacy-card">
+        <div class="privacy-icon">🔒</div>
+        <div class="privacy-text">
+            <h4>Your Privacy is Always Protected</h4>
+            <p>
+                We believe your memories are deeply personal. Camera and microphone access runs 100% inside your browser. Live video and audio calls are direct peer-to-peer (WebRTC) and are <strong>never recorded or stored on any server</strong>. Your final photo strips are composed directly on your device using HTML5 Canvas.
+            </p>
+        </div>
+    </div>
+</section>
+
 <!-- Section: How It Works -->
 <section id="how-it-works" class="how-it-works-section">
     <div class="section-container">
         <div class="section-header text-center">
-            <span class="section-kicker">Simple & Fun</span>
-            <h2 class="section-title">How Our Booth Works</h2>
+            <span class="section-kicker">Simple & Seamless</span>
+            <h2 class="section-title">How Little Memories Works</h2>
             <div class="title-underline">
                 <span class="line"></span>
                 <span class="heart-symbol">♡</span>
                 <span class="line"></span>
             </div>
-            <p class="section-desc">Snap your memories together in three effortless steps right from your laptop or phone camera!</p>
+            <p class="section-desc">Create timeless photobooth strips in three simple steps right from your browser!</p>
         </div>
 
         <div class="steps-grid">
@@ -153,14 +251,14 @@
                 <div class="washi-tape washi-tape-card" aria-hidden="true"></div>
                 <div class="step-number-badge">1</div>
                 <div class="step-icon-wrapper">
-                    <span class="step-icon">⚙️</span>
+                    <span class="step-icon">🚪</span>
                 </div>
-                <h3 class="step-title">Set Up Your Booth</h3>
+                <h3 class="step-title">Choose Mode & Enter</h3>
                 <p class="step-text">
-                    Allow camera access with a single click. Choose between 3 or 4 photo strips, set mirror mode, switch cameras, and pick your favorite countdown timer (3s, 5s, or 10s).
+                    Select <strong>LDR Couple Mode</strong> to create a private room for two, or <strong>Friends Mode</strong> (local single camera or remote group call). No account required!
                 </p>
                 <div class="step-tip">
-                    <span>💡 Tip:</span> 5-second countdown gives you just enough time to fix your hair and strike the pose!
+                    <span>💡 Tip:</span> Share your room link via WhatsApp, iMessage, or Instagram DM.
                 </div>
             </div>
 
@@ -171,12 +269,12 @@
                 <div class="step-icon-wrapper">
                     <span class="step-icon">📸</span>
                 </div>
-                <h3 class="step-title">Strike a Pose</h3>
+                <h3 class="step-title">Strike a Pose in Sync</h3>
                 <p class="step-text">
-                    Watch the animated countdown on screen, hear the shutter click, and see your photo instantly. Love it? Keep it! Didn't like it? Tap retake without losing your progress.
+                    Watch the animated synchronized countdown on screen (3s, 5s, or 10s). Both cameras capture at the target moment. Review each shot and retake if someone blinked!
                 </p>
                 <div class="step-tip">
-                    <span>💡 Tip:</span> Try matching poses: funny glasses, finger hearts, or goofy surprised faces!
+                    <span>💡 Tip:</span> Try matching poses: funny glasses, finger hearts, or mirror poses!
                 </div>
             </div>
 
@@ -187,28 +285,320 @@
                 <div class="step-icon-wrapper">
                     <span class="step-icon">🎀</span>
                 </div>
-                <h3 class="step-title">Save the Memories</h3>
+                <h3 class="step-title">Customize & Print</h3>
                 <p class="step-text">
-                    Customize your strip! Pick vintage, black & white, or soft pink filters. Choose pastel backgrounds, add cute doodles and date stamps, then download a high-res PNG image.
+                    Apply 8 vintage filters, pick pastel backgrounds, add cute doodles, nicknames, and date stamps. Export a high-resolution PNG ready for scrapbooking or printing!
                 </p>
                 <div class="step-tip">
-                    <span>💡 Tip:</span> Print your downloaded strip on photo paper for an authentic vintage scrapbook feel.
+                    <span>💡 Tip:</span> Both participants get the exact same composite photo strip!
                 </div>
             </div>
         </div>
 
-        <!-- Call to Action Banner -->
+        <!-- Ready Banner -->
         <div class="ready-banner">
             <div class="ready-content">
                 <div class="ready-sparkles">✨ ✿ ✧</div>
-                <h3 class="ready-title">Ready to take some cute photos?</h3>
-                <p class="ready-subtitle">No sign up, no downloads required. Works right in your browser!</p>
-                <a href="{{ url_for('booth') }}" class="btn-primary btn-large">
-                    <span>Open Camera Studio Now</span>
+                <h3 class="ready-title">Ready to capture something beautiful?</h3>
+                <p class="ready-subtitle">Distance means so little when someone means so much. Start snapping now!</p>
+                <a href="#mode-selection" class="btn-primary btn-large">
+                    <span>Get Started Now</span>
                     <span class="btn-arrow">→</span>
                 </a>
             </div>
         </div>
     </div>
 </section>
+
+<!-- MODAL: Create LDR Room -->
+<div id="modal-create-ldr" class="modal-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="title-create-ldr">
+    <div class="modal-box modal-box-sm card-shadow text-center">
+        <h3 id="title-create-ldr" class="modal-title">Create Our LDR Room ❤️</h3>
+        <p class="modal-desc">Enter your nickname so your partner knows it's you!</p>
+
+        <div class="modal-form-group">
+            <label for="ldr-nickname-input" class="modal-form-label">Your Nickname:</label>
+            <input type="text" id="ldr-nickname-input" class="modal-input" placeholder="e.g. Ahmad" maxlength="25" value="" />
+        </div>
+
+        <div id="ldr-room-result" class="is-hidden" style="margin-bottom: 1.25rem;">
+            <p style="font-size: 0.85rem; color: var(--color-cocoa); font-weight: 700; margin-bottom: 0.4rem;">Room Created! Share this link with your sweetheart:</p>
+            <div class="share-link-box">
+                <input type="text" id="ldr-share-link" class="share-link-input" readonly />
+                <button type="button" id="btn-copy-ldr-link" class="btn-copy">Copy</button>
+            </div>
+        </div>
+
+        <div class="modal-actions-centered">
+            <button type="button" class="btn-secondary" id="btn-close-create-ldr">Cancel</button>
+            <button type="button" class="btn-primary" id="btn-submit-create-ldr">Create Room ♡</button>
+            <button type="button" class="btn-primary is-hidden" id="btn-enter-ldr-studio">Enter Room ❤️</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Join LDR Room -->
+<div id="modal-join-ldr" class="modal-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="title-join-ldr">
+    <div class="modal-box modal-box-sm card-shadow text-center">
+        <h3 id="title-join-ldr" class="modal-title">Join LDR Room 🔗</h3>
+        <p class="modal-desc">Paste the invite link or enter the Room Code shared by your partner.</p>
+
+        <div class="modal-form-group">
+            <label for="ldr-join-code-input" class="modal-form-label">Room Code or Invite Link:</label>
+            <input type="text" id="ldr-join-code-input" class="modal-input" placeholder="e.g. ldr-7a2b9c or full link" />
+        </div>
+
+        <div class="modal-form-group">
+            <label for="ldr-join-name-input" class="modal-form-label">Your Nickname:</label>
+            <input type="text" id="ldr-join-name-input" class="modal-input" placeholder="e.g. Sis" maxlength="25" />
+        </div>
+
+        <div class="modal-actions-centered">
+            <button type="button" class="btn-secondary" id="btn-close-join-ldr">Cancel</button>
+            <button type="button" class="btn-primary" id="btn-submit-join-ldr">Join Room ♡</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Remote Friends Options (Create or Join) -->
+<div id="modal-friends-remote" class="modal-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="title-friends-remote">
+    <div class="modal-box modal-box-sm card-shadow text-center">
+        <h3 id="title-friends-remote" class="modal-title">Remote Friends Squad 👥</h3>
+        <p class="modal-desc">Join your friends in a private room from separate devices.</p>
+
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+            <button type="button" id="tab-btn-create-friends" class="btn-primary btn-sm btn-full">Create Room</button>
+            <button type="button" id="tab-btn-join-friends" class="btn-secondary btn-sm btn-full">Join Room</button>
+        </div>
+
+        <!-- Create Section -->
+        <div id="friends-create-section">
+            <div class="modal-form-group">
+                <label for="friends-host-name-input" class="modal-form-label">Your Nickname:</label>
+                <input type="text" id="friends-host-name-input" class="modal-input" placeholder="e.g. Alex" maxlength="25" />
+            </div>
+
+            <div id="friends-room-result" class="is-hidden" style="margin-bottom: 1.25rem;">
+                <p style="font-size: 0.85rem; color: var(--color-cocoa); font-weight: 700; margin-bottom: 0.4rem;">Invite your squad with this link:</p>
+                <div class="share-link-box">
+                    <input type="text" id="friends-share-link" class="share-link-input" readonly />
+                    <button type="button" id="btn-copy-friends-link" class="btn-copy">Copy</button>
+                </div>
+            </div>
+
+            <div class="modal-actions-centered">
+                <button type="button" class="btn-secondary" id="btn-close-friends-modal">Cancel</button>
+                <button type="button" class="btn-primary" id="btn-submit-create-friends">Create Squad Room ✨</button>
+                <button type="button" class="btn-primary is-hidden" id="btn-enter-friends-studio">Enter Room 👥</button>
+            </div>
+        </div>
+
+        <!-- Join Section -->
+        <div id="friends-join-section" class="is-hidden">
+            <div class="modal-form-group">
+                <label for="friends-join-code-input" class="modal-form-label">Room Code or Invite Link:</label>
+                <input type="text" id="friends-join-code-input" class="modal-input" placeholder="e.g. friends-a1b2c3 or full link" />
+            </div>
+
+            <div class="modal-form-group">
+                <label for="friends-join-name-input" class="modal-form-label">Your Nickname:</label>
+                <input type="text" id="friends-join-name-input" class="modal-input" placeholder="e.g. Sam" maxlength="25" />
+            </div>
+
+            <div class="modal-actions-centered">
+                <button type="button" class="btn-secondary" id="btn-close-friends-modal-2">Cancel</button>
+                <button type="button" class="btn-primary" id="btn-submit-join-friends">Join Squad Room 👥</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    function showToast(message, icon = '♡') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    }
+
+    // Modal elements
+    const modalCreateLdr = document.getElementById('modal-create-ldr');
+    const modalJoinLdr = document.getElementById('modal-join-ldr');
+    const modalFriendsRemote = document.getElementById('modal-friends-remote');
+
+    // Open buttons
+    document.getElementById('btn-open-create-ldr')?.addEventListener('click', () => {
+        modalCreateLdr.classList.remove('is-hidden');
+    });
+
+    document.getElementById('btn-open-join-ldr')?.addEventListener('click', () => {
+        modalJoinLdr.classList.remove('is-hidden');
+    });
+
+    document.getElementById('btn-open-friends-remote')?.addEventListener('click', () => {
+        modalFriendsRemote.classList.remove('is-hidden');
+    });
+
+    // Close buttons
+    document.getElementById('btn-close-create-ldr')?.addEventListener('click', () => {
+        modalCreateLdr.classList.add('is-hidden');
+    });
+
+    document.getElementById('btn-close-join-ldr')?.addEventListener('click', () => {
+        modalJoinLdr.classList.add('is-hidden');
+    });
+
+    document.getElementById('btn-close-friends-modal')?.addEventListener('click', () => {
+        modalFriendsRemote.classList.add('is-hidden');
+    });
+
+    document.getElementById('btn-close-friends-modal-2')?.addEventListener('click', () => {
+        modalFriendsRemote.classList.add('is-hidden');
+    });
+
+    // Remote Friends Tab switching
+    const tabCreateFriends = document.getElementById('tab-btn-create-friends');
+    const tabJoinFriends = document.getElementById('tab-btn-join-friends');
+    const friendsCreateSec = document.getElementById('friends-create-section');
+    const friendsJoinSec = document.getElementById('friends-join-section');
+
+    tabCreateFriends?.addEventListener('click', () => {
+        tabCreateFriends.className = 'btn-primary btn-sm btn-full';
+        tabJoinFriends.className = 'btn-secondary btn-sm btn-full';
+        friendsCreateSec.classList.remove('is-hidden');
+        friendsJoinSec.classList.add('is-hidden');
+    });
+
+    tabJoinFriends?.addEventListener('click', () => {
+        tabJoinFriends.className = 'btn-primary btn-sm btn-full';
+        tabCreateFriends.className = 'btn-secondary btn-sm btn-full';
+        friendsJoinSec.classList.remove('is-hidden');
+        friendsCreateSec.classList.add('is-hidden');
+    });
+
+    // Create LDR Room action
+    let createdLdrUrl = '';
+    document.getElementById('btn-submit-create-ldr')?.addEventListener('click', async () => {
+        const name = document.getElementById('ldr-nickname-input').value.trim() || 'Partner 1';
+        try {
+            const resp = await fetch('/api/rooms/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'ldr', nickname: name })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                createdLdrUrl = `${window.location.origin}/ldr/${data.room_id}`;
+                document.getElementById('ldr-share-link').value = createdLdrUrl;
+                document.getElementById('ldr-room-result').classList.remove('is-hidden');
+                document.getElementById('btn-submit-create-ldr').classList.add('is-hidden');
+                const enterBtn = document.getElementById('btn-enter-ldr-studio');
+                enterBtn.classList.remove('is-hidden');
+                enterBtn.onclick = () => {
+                    window.location.href = `/ldr/${data.room_id}?name=${encodeURIComponent(name)}&peer_id=${data.peer_id}`;
+                };
+                showToast('Room created! Copy the link and send it to your partner ♡', '🎉');
+            } else {
+                showToast(data.error || 'Failed to create room', '⚠️');
+            }
+        } catch (e) {
+            showToast('Network error creating room', '⚠️');
+        }
+    });
+
+    // Copy LDR Link
+    document.getElementById('btn-copy-ldr-link')?.addEventListener('click', () => {
+        const linkInput = document.getElementById('ldr-share-link');
+        linkInput.select();
+        navigator.clipboard.writeText(linkInput.value);
+        showToast('Link copied to clipboard! ♡', '📋');
+    });
+
+    // Join LDR Room action
+    document.getElementById('btn-submit-join-ldr')?.addEventListener('click', () => {
+        let inputVal = document.getElementById('ldr-join-code-input').value.trim();
+        const name = document.getElementById('ldr-join-name-input').value.trim() || 'Partner 2';
+        if (!inputVal) {
+            showToast('Please enter an invite link or room code', '⚠️');
+            return;
+        }
+        // Extract room ID if full URL pasted
+        const match = inputVal.match(/ldr-[a-zA-Z0-9_-]+/);
+        const roomId = match ? match[0] : inputVal;
+        window.location.href = `/ldr/${roomId}?name=${encodeURIComponent(name)}`;
+    });
+
+    // Create Friends Room action
+    let createdFriendsUrl = '';
+    document.getElementById('btn-submit-create-friends')?.addEventListener('click', async () => {
+        const name = document.getElementById('friends-host-name-input').value.trim() || 'Friend 1';
+        try {
+            const resp = await fetch('/api/rooms/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'friends', nickname: name })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                createdFriendsUrl = `${window.location.origin}/friends/remote/${data.room_id}`;
+                document.getElementById('friends-share-link').value = createdFriendsUrl;
+                document.getElementById('friends-room-result').classList.remove('is-hidden');
+                document.getElementById('btn-submit-create-friends').classList.add('is-hidden');
+                const enterBtn = document.getElementById('btn-enter-friends-studio');
+                enterBtn.classList.remove('is-hidden');
+                enterBtn.onclick = () => {
+                    window.location.href = `/friends/remote/${data.room_id}?name=${encodeURIComponent(name)}&peer_id=${data.peer_id}`;
+                };
+                showToast('Squad room created! Share with your friends ✨', '🎉');
+            } else {
+                showToast(data.error || 'Failed to create room', '⚠️');
+            }
+        } catch (e) {
+            showToast('Network error creating room', '⚠️');
+        }
+    });
+
+    // Copy Friends Link
+    document.getElementById('btn-copy-friends-link')?.addEventListener('click', () => {
+        const linkInput = document.getElementById('friends-share-link');
+        linkInput.select();
+        navigator.clipboard.writeText(linkInput.value);
+        showToast('Link copied to clipboard! ✨', '📋');
+    });
+
+    // Join Friends Room action
+    document.getElementById('btn-submit-join-friends')?.addEventListener('click', () => {
+        let inputVal = document.getElementById('friends-join-code-input').value.trim();
+        const name = document.getElementById('friends-join-name-input').value.trim() || 'Friend';
+        if (!inputVal) {
+            showToast('Please enter an invite link or room code', '⚠️');
+            return;
+        }
+        const match = inputVal.match(/friends-[a-zA-Z0-9_-]+/);
+        const roomId = match ? match[0] : inputVal;
+        window.location.href = `/friends/remote/${roomId}?name=${encodeURIComponent(name)}`;
+    });
+
+    // Close on click outside
+    [modalCreateLdr, modalJoinLdr, modalFriendsRemote].forEach(m => {
+        m?.addEventListener('click', (e) => {
+            if (e.target === m) m.classList.add('is-hidden');
+        });
+    });
+});
+</script>
 {% endblock %}

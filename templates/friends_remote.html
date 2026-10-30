@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Remote Friends Photobooth — Little Memories ♡{% endblock %}
+
+{% block content %}
+<div class="booth-page-container">
+    <!-- Top Bar: Room Info, Status & Navigation -->
+    <div class="booth-top-bar">
+        <div class="booth-top-left">
+            <a href="{{ url_for('index') }}" class="btn-text-back" id="btn-back-home" title="Return to Home">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Leave Room</span>
+            </a>
+            <div class="session-badge" id="room-code-badge">
+                <span class="badge-dot" id="connection-dot"></span>
+                <span id="session-status-text">Squad Connecting...</span>
+            </div>
+        </div>
+
+        <div class="booth-top-center">
+            <h1 class="booth-heading">Friends Squad Studio 👥</h1>
+        </div>
+
+        <div class="booth-top-right">
+            <button type="button" id="btn-copy-invite" class="btn-icon-subtle" title="Copy Invite Link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="copy-btn-text">Copy Squad Link</span>
+            </button>
+            <button type="button" id="btn-reset-session" class="btn-icon-subtle" title="Reset Session">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>Reset</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Studio Layout -->
+    <div class="studio-layout">
+        <div class="studio-stage-column">
+            <!-- GROUP CAMERA FEEDS CONTAINER -->
+            <div id="camera-stage" class="camera-stage card-shadow">
+                <div class="washi-tape washi-tape-center" aria-hidden="true"></div>
+
+                <!-- Group Video Feeds Grid (up to 4 video boxes) -->
+                <div class="friends-viewport-grid" id="friends-viewport-grid">
+                    <!-- Local Feed -->
+                    <div class="video-feed-box" id="local-feed-box">
+                        <div class="feed-name-tag">
+                            <span class="feed-dot active"></span>
+                            <span id="local-nickname-display">You (Host)</span>
+                        </div>
+                        <video id="local-video" autoplay playsinline muted></video>
+                        <canvas id="local-canvas-freeze" class="review-canvas is-hidden"></canvas>
+                    </div>
+
+                    <!-- Remote Feeds dynamically injected by friends-booth.js -->
+                    <div id="remote-feeds-container" style="display: contents;"></div>
+
+                    <!-- Flash & Countdown -->
+                    <div id="camera-flash" class="camera-flash" aria-hidden="true"></div>
+                    <div id="countdown-overlay" class="countdown-overlay is-hidden" aria-live="assertive">
+                        <span id="countdown-number" class="countdown-number">3</span>
+                        <span id="countdown-smile" class="countdown-subtext">Squad pose! ✨</span>
+                    </div>
+
+                    <!-- Stamps -->
+                    <div class="viewport-corner top-left" aria-hidden="true">✦</div>
+                    <div class="viewport-corner top-right" aria-hidden="true">✧</div>
+                </div>
+
+                <!-- Camera Controls Bar -->
+                <div class="camera-controls-bar">
+                    <div class="control-group-left">
+                        <button type="button" id="btn-toggle-mic" class="tool-btn">
+                            <span id="mic-icon">🎙️</span>
+                            <span id="mic-label">Mic On</span>
+                        </button>
+                        <button type="button" id="btn-toggle-cam" class="tool-btn">
+                            <span id="cam-icon">📹</span>
+                            <span id="cam-label">Cam On</span>
+                        </button>
+                        <button type="button" id="btn-flip-camera" class="tool-btn">
+                            <span>🔄</span>
+                            <span>Flip</span>
+                        </button>
+                        <button type="button" id="btn-toggle-mirror" class="tool-btn active">
+                            <span>🪞</span>
+                            <span>Mirror</span>
+                        </button>
+                    </div>
+
+                    <div class="control-group-center">
+                        <button type="button" id="btn-trigger-capture" class="capture-trigger-btn" aria-label="Take squad photo">
+                            <span class="outer-ring">
+                                <span class="inner-circle">📸</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="control-group-right">
+                        <button type="button" id="btn-toggle-ready" class="tool-btn">
+                            <span id="ready-heart">🤍</span>
+                            <span id="ready-label">I'm Ready</span>
+                        </button>
+                        <div class="countdown-selector-pill">
+                            <span class="timer-icon">⏱️</span>
+                            <div class="timer-options">
+                                <button type="button" class="timer-opt active" data-seconds="3">3s</button>
+                                <button type="button" class="timer-opt" data-seconds="5">5s</button>
+                                <button type="button" class="timer-opt" data-seconds="10">10s</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHOTO STRIP FINAL PREVIEW STAGE -->
+            <div id="strip-stage" class="strip-stage card-shadow is-hidden">
+                <div class="washi-tape washi-tape-center" aria-hidden="true"></div>
+                <div class="strip-stage-header">
+                    <div>
+                        <h2 class="strip-stage-title">Squad Photo Strip! ✨</h2>
+                        <p class="strip-stage-sub">Customize borders, colors, and download your group memory.</p>
+                    </div>
+                    <button type="button" id="btn-back-to-camera" class="btn-secondary btn-sm">
+                        <span>📸 Take Another Shot</span>
+                    </button>
+                </div>
+
+                <div class="canvas-preview-container">
+                    <canvas id="photo-strip-canvas" class="photo-strip-canvas"></canvas>
+                </div>
+
+                <div class="strip-export-bar">
+                    <button type="button" id="btn-download-strip" class="btn-primary btn-large shadow-pop">
+                        <span>Download Squad Strip (PNG)</span>
+                    </button>
+                    <button type="button" id="btn-download-singles" class="btn-secondary">
+                        <span>Download Individual Photos</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside class="studio-sidebar-column">
+            <!-- Session progress card -->
+            <div class="sidebar-card card-shadow session-tracker-card">
+                <div class="card-header-row">
+                    <h3 class="sidebar-title">
+                        <span>Squad Session</span>
+                        <span class="sparkle-accent">✨</span>
+                    </h3>
+                    <span id="photo-progress-badge" class="progress-badge">Shot 1 of 4</span>
+                </div>
+
+                <div class="session-format-picker">
+                    <label class="setting-label">Strip Format:</label>
+                    <div class="format-options">
+                        <button type="button" class="format-btn active" data-count="4">4 Shots</button>
+                        <button type="button" class="format-btn" data-count="3">3 Shots</button>
+                        <button type="button" class="format-btn" data-count="1">1 Polaroid</button>
+                    </div>
+                </div>
+
+                <div class="thumbnails-filmstrip-wrapper">
+                    <div class="filmstrip-label">Captured Snaps:</div>
+                    <div id="thumbnails-container" class="thumbnails-container"></div>
+                </div>
+
+                <div id="review-action-panel" class="is-hidden" style="margin-top: 1rem; padding: 1rem; background: var(--color-cream-light); border-radius: var(--border-radius-sm); border: 1px dashed var(--color-cocoa-light);">
+                    <p style="font-size: 0.85rem; font-weight: 700; color: var(--color-cocoa-dark); margin-bottom: 0.65rem;">Review Shot:</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="btn-retake-shot" class="btn-secondary btn-sm btn-full">Retake</button>
+                        <button type="button" id="btn-keep-shot" class="btn-primary btn-sm btn-full">Keep Shot ✨</button>
+                    </div>
+                </div>
+
+                <div class="create-strip-cta">
+                    <button type="button" id="btn-generate-strip-now" class="btn-primary btn-full pulse-btn" disabled>
+                        <span>✨ Create Squad Photo Strip</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters card -->
+            <div class="sidebar-card card-shadow filters-card">
+                <div class="card-header-row">
+                    <h3 class="sidebar-title">
+                        <span>Retro Filters</span>
+                        <span class="sparkle-accent">✨</span>
+                    </h3>
+                    <span id="active-filter-label" class="filter-name-tag">Vintage</span>
+                </div>
+                <div class="filter-intensity-row">
+                    <label for="filter-intensity-slider" class="setting-label">Intensity: <span id="intensity-val">85%</span></label>
+                    <input type="range" id="filter-intensity-slider" min="0" max="100" value="85" class="custom-range" />
+                </div>
+                <div class="filters-grid" id="filters-grid"></div>
+            </div>
+
+            <!-- Styling card -->
+            <div class="sidebar-card card-shadow customizer-card">
+                <h3 class="sidebar-title">
+                    <span>Strip Styling</span>
+                    <span class="flower-accent">✿</span>
+                </h3>
+                <div class="customizer-group">
+                    <label class="setting-label">Layout Style:</label>
+                    <div class="layout-toggle-grid">
+                        <button type="button" class="layout-opt-btn active" data-layout="vertical-4">
+                            <span>🎞️ Vertical 4</span>
+                        </button>
+                        <button type="button" class="layout-opt-btn" data-layout="grid-2x2">
+                            <span>🔲 2 × 2 Grid</span>
+                        </button>
+                        <button type="button" class="layout-opt-btn" data-layout="polaroid-single">
+                            <span>📷 Polaroid</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="customizer-group">
+                    <label class="setting-label">Background Color:</label>
+                    <div class="color-swatches" id="color-swatches">
+                        <button type="button" class="color-swatch active" data-color="#FFF8EF" style="background-color: #FFF8EF;"></button>
+                        <button type="button" class="color-swatch" data-color="#F5D9DC" style="background-color: #F5D9DC;"></button>
+                        <button type="button" class="color-swatch" data-color="#FFFFFF" style="background-color: #FFFFFF;"></button>
+                        <button type="button" class="color-swatch" data-color="#1E1A18" style="background-color: #1E1A18;"></button>
+                        <button type="button" class="color-swatch" data-color="#E8E2F5" style="background-color: #E8E2F5;"></button>
+                        <button type="button" class="color-swatch" data-color="#E2ECE4" style="background-color: #E2ECE4;"></button>
+                    </div>
+                </div>
+
+                <div class="customizer-group">
+                    <label for="friends-title-input" class="setting-label">Session Title:</label>
+                    <input type="text" id="friends-title-input" class="custom-input" value="Little Memories Squad ✨" maxlength="35" />
+                </div>
+                <div class="customizer-group">
+                    <label for="friends-footer-input" class="setting-label">Footer Caption:</label>
+                    <input type="text" id="friends-footer-input" class="custom-input" value="Friends forever & always ♡" maxlength="40" />
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<canvas id="confetti-canvas" class="confetti-canvas is-hidden" aria-hidden="true"></canvas>
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.INITIAL_ROOM_ID = "{{ initial_room_id or '' }}";
+    window.PHOTOBOOTH_MODE = "friends";
+</script>
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo-strip.js') }}"></script>
+<script src="{{ url_for('static', filename='js/webrtc-room.js') }}"></script>
+<script src="{{ url_for('static', filename='js/friends-booth.js') }}"></script>
+{% endblock %}

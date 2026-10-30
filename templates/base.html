@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Our Little Booth — Virtual Online Photobooth{% endblock %}</title>
-    <meta name="description" content="A cute, cozy virtual photobooth for two siblings to take photos together and create vintage photo strips.">
+    <title>{% block title %}Little Memories — Every moment deserves a picture ♡{% endblock %}</title>
+    <meta name="description" content="Little Memories — Dual-mode virtual photobooth for long-distance couples and friends. Take photos together in one room or from across the world.">
     <!-- Google Fonts: Playfair Display for headings, Plus Jakarta Sans for body, Caveat for handwritten notes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,15 +32,21 @@
                         <circle cx="12" cy="13" r="3"/>
                     </svg>
                 </span>
-                <span class="logo-text">our little booth <span class="logo-heart">♡</span></span>
+                <span class="logo-text">Little Memories <span class="logo-heart">♡</span></span>
             </a>
 
             <nav class="site-nav">
                 <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('ldr_booth') }}" class="nav-link {% if request.endpoint == 'ldr_booth' %}active{% endif %}">
+                    <span>❤️ LDR Booth</span>
+                </a>
+                <a href="{{ url_for('friends_local') }}" class="nav-link {% if request.endpoint == 'friends_local' or request.endpoint == 'booth' %}active{% endif %}">
+                    <span>👥 Friends Booth</span>
+                </a>
                 <a href="{{ url_for('index') }}#how-it-works" class="nav-link">How It Works</a>
-                <a href="{{ url_for('booth') }}" class="nav-btn-booth">
+                <a href="{{ url_for('friends_local') }}" class="nav-btn-booth">
                     <span class="nav-btn-icon">📸</span>
-                    <span>Open Photobooth</span>
+                    <span>Start Snapping</span>
                 </a>
             </nav>
         </div>
@@ -55,12 +61,16 @@
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-tape" aria-hidden="true"></div>
-            <p class="footer-quote">"Two siblings, endless silly poses, and memories worth keeping."</p>
-            <p class="footer-love">Made with love, just for us <span class="heart-pulse">♡</span></p>
+            <p class="footer-quote">"Distance means so little when someone means so much. Every moment deserves a picture."</p>
+            <p class="footer-love">Little Memories • Made with love, wherever you are <span class="heart-pulse">♡</span></p>
             <div class="footer-links">
                 <a href="{{ url_for('index') }}">Home</a>
                 <span class="dot-separator">•</span>
-                <a href="{{ url_for('booth') }}">Photobooth Studio</a>
+                <a href="{{ url_for('ldr_booth') }}">LDR Couple Booth</a>
+                <span class="dot-separator">•</span>
+                <a href="{{ url_for('friends_local') }}">Friends Local Booth</a>
+                <span class="dot-separator">•</span>
+                <a href="{{ url_for('friends_remote') }}">Friends Remote Booth</a>
                 <span class="dot-separator">•</span>
                 <a href="{{ url_for('health') }}" target="_blank">Health Check</a>
             </div>

@@ -1,63 +1,74 @@
-# Our Little Booth — Virtual Online Photobooth ♡
+# Little Memories — Dual-Mode Photobooth ♡
 
-A cute, nostalgic, scrapbook-inspired virtual photobooth designed for siblings to take adorable photos together right in their browser, apply authentic retro filters, customize vintage photo strips, and download high-resolution PNG keepsakes.
+> *"Every moment deserves a picture."*
 
----
+**Little Memories** is a romantic, playful, modern photobooth web application built with Python Flask, WebRTC, HTML5 Canvas, and Vanilla JavaScript. It offers two distinct photobooth modes tailored for couples and friends:
 
-## ✨ Features
-
-- **Cozy Scrapbook Aesthetic**: Warm cream (`#FFF8EF`), blush pink (`#F5D9DC`), and cocoa brown (`#74564A`) theme with delicate paper grain textures, washi tape accents, and floating star/heart doodles.
-- **Camera Studio Controls**:
-  - Direct integration with `navigator.mediaDevices.getUserMedia()`.
-  - Permission requested only after user clicks **Start Camera**.
-  - Front / rear camera switching and camera device selector.
-  - Horizontal mirror view toggle.
-  - Configurable countdown timer: **Off**, **3s**, **5s**, or **10s** with animated numbers.
-  - Realistic shutter flash animation and synthesized mechanical shutter audio (via Web Audio API).
-  - Review screen with instant **Keep Photo ♡** or **Retake Photo** options.
-  - Virtual Sibling Poses (Demo Mode) and photo upload fallback for testing or devices without a physical camera.
-- **Photo Session Manager**:
-  - Choose between 4-photo strips, 3-photo strips, or 1-photo Polaroid layout.
-  - Real-time photo counter (`Photo 2 of 4`) and visual filmstrip thumbnails.
-  - Delete or retake any specific photo in the session without losing other snaps.
-- **8 Retro & Aesthetic Filters**:
-  1. *Original* (Natural authentic look)
-  2. *Vintage* (Warm, faded 90s film look with subtle vignette)
-  3. *Black & White* (Classic monochrome silver screen)
-  4. *Warm Film* (Golden hour amber glow)
-  5. *Soft Pink* (Dreamy pastel blush tone)
-  6. *Sepia* (Antique Victorian scrapbook brown)
-  7. *Cool Tone* (Nostalgic cyan/blue chill tint)
-  8. *High Pop* (Punchy saturated vivid contrast)
-  - Real-time intensity slider (0% to 100%).
-  - Filters are applied directly to the final Canvas drawing operations on export, preserving the raw original frames in memory.
-- **High-Resolution Photo Strip Generator**:
-  - Layout options: **Classic Vertical 4-Strip**, **Vertical 3-Strip**, **2x2 Photo Grid**, and **Polaroid**.
-  - Background color palette: Warm Cream, Blush Pink, Classic White, Vintage Noir Black, Pastel Lavender, and Soft Sage Mint.
-  - Vintage film borders, film sprocket holes, and cute washi tape toggles.
-  - Adjustable photo spacing slider.
-  - Customizable session title, date stamp, and sibling nicknames.
-  - Cute sticker packs: Hearts, Stars & Sparkles, Flowers & Daisies, Silly Smiles, or a Cute Mix.
-  - Celebration confetti animation when the photo strip is finalized.
-- **Export & Download**:
-  - One-click client-side download as high-resolution PNG (`our-little-booth-YYYY-MM-DD.png`) using `HTMLCanvasElement.toBlob()`.
-  - Download individual photos as separate PNG files.
-  - Opt-in server-side gallery save via secure Flask API (`/api/save-strip`), verified by Pillow.
-  - Built-in session gallery to view and re-download past strips.
+1. **LDR Photobooth (Long-Distance Couple Mode)**: Designed for two participants on different devices and networks (e.g., laptop and mobile phone). Join the same private room, see and hear each other live with peer-to-peer WebRTC, trigger synchronized countdowns, exchange captured frames, review or retake shots, and compose a shared couple photostrip to download as a high-resolution PNG.
+2. **Friends Photobooth**:
+   - **Local Mode**: Friends gathered together in front of one device camera. Zero setup, instant photoshoot, retro filters, and classic photo strip customizer.
+   - **Remote Mode**: Friends in different locations. Group WebRTC room supporting up to 4 participants, synchronized squad poses, individual retakes, and downloadable squad photostrip.
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Key Features
 
-- **Backend**: Python 3.11+, Flask 3.0+, Pillow (PIL), Werkzeug.
-- **Frontend**: HTML5, CSS3 (Modern Flexbox/Grid, CSS Custom Properties, Keyframe Animations), Vanilla JavaScript (ES6+).
-- **APIs**: Browser MediaDevices API (`getUserMedia`, `enumerateDevices`), HTML5 Canvas API, Web Audio API.
+### 1. Dual-Mode Experience
+- **LDR Couple Studio (`/ldr` & `/ldr/<room_id>`)**:
+  - Private 2-person room with unique shareable invite link (`/ldr/XXXXXX`).
+  - Strict 2-participant limit with automatic room code generation or custom code entry.
+  - Live bidirectional peer-to-peer WebRTC audio and video streaming.
+  - Synchronized countdown with target-timestamp synchronization so both partners capture frames at the exact same millisecond.
+  - Local high-resolution frame capture sent over `RTCDataChannel` (chunked base64 transfer) with fallback to REST signaling.
+  - Dual review stage: preview both your shot and your partner's shot with instant individual **Retake** or **Keep Shot ♡** actions.
+  - Shared customizable photostrip generator combining both partners' snaps into alternating vertical, 2x2 grid, or polaroid strips.
+
+- **Friends Studio — Local Mode (`/booth` & `/friends/local`)**:
+  - Single-camera photobooth for in-person gatherings.
+  - 8 retro filters, stickers, custom background colors, and instant download.
+  - Virtual poses (Demo Mode) and photo upload fallback for testing without a webcam.
+
+- **Friends Studio — Remote Squad Mode (`/friends/remote` & `/friends/remote/<room_id>`)**:
+  - Multi-participant WebRTC room supporting up to 4 friends.
+  - Dynamic responsive video grid (1-4 feeds).
+  - Synchronized squad countdown and automatic frame collection into a squad photostrip.
+
+### 2. Aesthetic Design & Micro-Interactions
+- Scrapbook and vintage camera visual language: warm cream (`#FFF8EF`), blush pink (`#F5D9DC`), cocoa brown (`#74564A`), lavender, and white.
+- Soft shadows, rounded corners, washi tape accents, and delicate paper textures.
+- Studio audio effects synthesized using the Web Audio API (countdown beeps, realistic mechanical camera shutter, celebration chime).
+- Canvas confetti particle effects upon finalizing photostrips.
+- Responsive mobile & desktop layouts (side-by-side video feeds on desktop, stacked on mobile).
+
+### 3. Retro & Aesthetic Filters (Canvas & Real-Time CSS)
+1. **Original** — Natural authentic preview
+2. **Vintage** — Faded 90s film look with warm vignette
+3. **Black & White** — Classic silver screen monochrome
+4. **Warm Film** — Golden hour amber tones
+5. **Soft Pink** — Dreamy pastel blush
+6. **Sepia** — Victorian antique scrapbook tone
+7. **Cool Tone** — Cyan / chilled nostalgic hue
+8. **High Pop** — Punchy saturated contrast
+
+### 4. High-Resolution Strip Generator & Customization
+- **Layouts**: Classic Vertical 4-Strip, Vertical 3-Strip, 2x2 Grid, and Polaroid.
+- **Palette**: Warm Cream, Blush Pink, Classic White, Noir Black, Lavender, and Sage Mint.
+- **Cute Stickers**: Hearts, Stars, Flowers, and Silly Smiles.
+- **Export**: Client-side lossless PNG export (`HTMLCanvasElement.toBlob()`) with optional individual photo downloads.
 
 ---
 
-## 🚀 Running the Project Locally (Windows PowerShell)
+## 🛠️ Architecture & Vercel Compatibility
 
-Follow these exact steps in Windows PowerShell to set up and start the application:
+- **WebRTC Peer-to-Peer Media**: Video and audio streams flow directly peer-to-peer between devices via Google STUN servers (`stun:stun.l.google.com:19302`). Flask never handles continuous video streams, ensuring minimal latency and zero server bandwidth bottlenecks.
+- **Serverless REST Signaling Bridge**: Vercel Serverless Functions do not support persistent WebSockets. To make real-time rooms work seamlessly on Vercel, `app.py` implements a robust REST polling signaling bridge (`/api/rooms/...`) that relays SDP offers, answers, ICE candidates, and countdown events with an 800ms adaptive poll rate.
+- **Optional Standalone WebSocket Server**: For persistent VPS, Render, or Railway hosts, `signaling_server.py` is provided for sub-10ms WebSocket signaling.
+- **Read-Only Filesystem Safe**: Uses dynamic temporary directory fallback (`/tmp/saved_strips`) on AWS Lambda/Vercel environments.
+- **Static Assets Routing**: Assets are served both via Flask's static routes and directly via Vercel's Edge CDN through the mirrored `public/static/` directory.
+
+---
+
+## 🚀 Running Locally (Windows PowerShell)
 
 ### Step 1: Create Virtual Environment
 ```powershell
@@ -68,14 +79,13 @@ python -m venv .venv
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
-*(Note: If PowerShell displays an execution policy warning, you can run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` before activating).*
 
 ### Step 3: Install Dependencies
 ```powershell
 pip install -r requirements.txt
 ```
 
-### Step 4: Start the Application
+### Step 4: Run Application
 ```powershell
 python app.py
 ```
@@ -88,85 +98,72 @@ http://127.0.0.1:5000
 
 ---
 
-## 🔒 Camera Access & Security Notice (Localhost vs HTTPS)
+## 📱 Testing with Two Devices (Laptop & Mobile Phone)
 
-Modern web browsers enforce strict security policies regarding camera and microphone access:
-- **Localhost is a Secure Context**: Opening `http://127.0.0.1:5000` or `http://localhost:5000` is automatically treated as a secure context, allowing full camera access without an SSL certificate.
-- **Accessing from Mobile / Another Device on LAN**: If you connect to your machine via an HTTP local network IP (e.g. `http://192.168.1.50:5000`), mobile browsers (Safari on iOS, Chrome on Android) **will block camera permissions** due to standard browser security requirements.
-- To use the camera from a phone or other device, either:
-  1. Access the booth directly on the computer where it is running, or
-  2. Use a secure tunneling tool (such as ngrok or cloudflare tunnel: `cloudflared tunnel --url http://localhost:5000`) to provide an HTTPS endpoint.
-- If no physical camera is connected or permission is denied, click **"Use Virtual Sibling Poses (Demo Mode)"** or **"Upload a Photo"** in the studio to test all features with simulated camera streams.
+Modern mobile browsers (iOS Safari, Android Chrome) enforce strict security and **block camera and microphone access on non-secure HTTP connections** (except `localhost`).
+
+To test LDR Mode between a laptop and a smartphone on different networks:
+
+### Option A: Using the Deployed Vercel HTTPS URL (Recommended)
+1. Open your live Vercel URL on your laptop: `https://your-site.vercel.app`
+2. Click **Create LDR Room** and choose a nickname (e.g. `Laptop`).
+3. Click **Copy Invite Link** and send the URL (`https://your-site.vercel.app/ldr/XXXXXX`) to your phone.
+4. Open the link on your phone browser, enter your partner nickname (e.g. `Mobile`), and tap **Join**.
+5. Grant camera permissions on both devices. You will now see and hear each other live!
+
+### Option B: Using an HTTPS Tunnel Locally
+Run the app on your laptop (`python app.py`), and in another terminal run a free tunnel tool:
+```powershell
+cloudflared tunnel --url http://localhost:5000
+# or
+ngrok http 5000
+```
+Open the generated HTTPS URL on both your laptop and your mobile device.
 
 ---
 
-## 📁 Project Structure
+## 🧪 Running Unit Tests
+
+Run the test suite to verify routes, room limits, and signaling:
+```powershell
+python -m unittest discover tests
+```
+
+---
+
+## 📂 Project Structure
 
 ```text
-photoboth/
-├── api/
-│   └── index.py                # Vercel Serverless Function entry point
-├── app.py                      # Flask server routes, health check, and secure save API
-├── vercel.json                 # Vercel URL rewrites routing to api/index.py
-├── .python-version             # Python version pin (3.11)
-├── .vercelignore               # Vercel deployment exclude rules
+photobooth-website/
+├── app.py                      # Flask app, REST signaling bridge & room manager
+├── signaling_server.py         # Optional standalone WebSocket signaling server
 ├── requirements.txt            # Python dependencies (Flask, Pillow, Werkzeug)
-├── README.md                   # Complete documentation and run instructions
-├── instance/
-│   ├── .gitkeep
-│   └── saved_strips/           # Opt-in saved photo strips
+├── vercel.json                 # Vercel serverless deployment & static routing config
+├── .python-version             # Python 3.12 runtime specification for Vercel
 ├── templates/
-│   ├── base.html               # Shared layout, fonts, header, floating doodles, footer
-│   ├── index.html              # Scrapbook landing page, preview strip, 3-step guide
-│   └── booth.html              # Photobooth camera studio, live preview & customizer
-└── static/
-    ├── css/
-    │   └── style.css           # Aesthetic responsive styles, animations, scrapbook theme
-    └── js/
-        ├── camera.js           # MediaDevices manager, mirror, flip, fallback simulation
-        ├── filters.js          # 8 retro filter algorithms (CSS + Canvas export)
-        ├── photo-strip.js      # Canvas composition engine (layouts, borders, stickers, export)
-        └── photobooth.js       # Session state, countdown, review, audio, and UI controller
+│   ├── base.html               # Little Memories base layout, nav & footer
+│   ├── index.html              # Landing page with Dual-Mode cards & room modals
+│   ├── booth.html              # Friends Studio (Local Mode)
+│   ├── ldr.html                # LDR Couple Studio (2-person WebRTC)
+│   └── friends_remote.html     # Remote Friends Studio (up to 4 WebRTC)
+├── static/
+│   ├── css/
+│   │   └── style.css           # Little Memories cozy scrapbook styling
+│   └── js/
+│       ├── camera.js           # Local webcam & device enumeration helper
+│       ├── filters.js          # Retro & aesthetic Canvas image filters
+│       ├── photo-strip.js      # Multi-layout Canvas photo strip generator
+│       ├── photobooth.js       # Local booth controller
+│       ├── webrtc-room.js      # WebRTC peer connection & signaling client
+│       ├── ldr-booth.js        # LDR couple studio client orchestrator
+│       └── friends-booth.js    # Remote friends squad client orchestrator
+├── public/                     # Mirrored static assets for Vercel CDN
+└── tests/
+    └── test_app.py             # 9 unit tests covering routes, rooms & signaling
 ```
 
 ---
 
-## ☁️ Vercel Deployment & Redeploy Guide
+## 📄 License & Privacy Notice
 
-This repository is optimized for Vercel Serverless Functions:
-- `api/index.py` exports the Flask `app` WSGI callable.
-- `vercel.json` rewrites all requests (`/(.*)`) to `/api/index`.
-- Serverless read-only filesystem is handled with an automatic `/tmp` fallback for temporary file generation.
-
-### Redeploy Steps via GitHub:
-1. Stage and commit your changes:
-   ```bash
-   git add .
-   git commit -m "Fix Vercel serverless deployment and entry points"
-   git push origin main
-   ```
-2. Vercel automatically detects the push and triggers a new build.
-
-### Redeploy Steps via Vercel CLI:
-```bash
-npm install -g vercel
-vercel --prod
-```
-
----
-
-## 🧪 Testing Verification
-
-You can test the application using Python `unittest` or by launching the server:
-
-```powershell
-python -m unittest tests/test_app.py
-```
-
-All core routes (`/`, `/booth`, `/health`, `/api/save-strip`) have been verified for stability, response status, and security.
-
----
-
-## ♡ Personal Touches
-
-Made with love for two siblings to preserve their silly poses and childhood memories together!
+Photos taken in Little Memories are processed and composed entirely inside your browser using the HTML5 Canvas API. Video and audio streams in LDR and Remote Friends modes travel peer-to-peer directly between your devices. No camera footage is uploaded to or stored on our servers.

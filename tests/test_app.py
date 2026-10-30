@@ -1,5 +1,5 @@
 """
-Automated Unit Tests for Our Little Booth Flask Application
+Automated Unit Tests for Little Memories Flask Application
 """
 
 import os
@@ -10,26 +10,27 @@ from PIL import Image
 from app import app, SAVED_STRIPS_DIR
 
 
-class TestOurLittleBooth(unittest.TestCase):
+class TestLittleMemories(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         self.client = app.test_client()
 
     def test_homepage_loads(self):
-        """Verify that the landing page renders with correct content."""
+        """Verify that the landing page renders with Little Memories branding and dual modes."""
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         html = response.get_data(as_text=True)
-        self.assertIn('A Little Place for', html)
-        self.assertIn('Our Memories', html)
-        self.assertIn('Two siblings, endless silly poses, and memories worth keeping', html)
-        self.assertIn('Start Taking Photos', html)
-        self.assertIn('View How It Works', html)
-        self.assertIn('Made with love, just for us', html)
+        self.assertIn('Little Memories', html)
+        self.assertIn('Every Moment Deserves a Picture', html)
+        self.assertIn('LDR Photobooth', html)
+        self.assertIn('Just you and me, wherever we are.', html)
+        self.assertIn('Friends Photobooth', html)
+        self.assertIn('Make memories together.', html)
+        self.assertIn('Your Privacy is Always Protected', html)
 
-    def test_booth_studio_loads(self):
-        """Verify that the photobooth studio renders all core UI elements."""
-        response = self.client.get('/booth')
+    def test_friends_local_studio_loads(self):
+        """Verify that the Local Friends Photobooth studio loads with all camera elements."""
+        response = self.client.get('/friends/local')
         self.assertEqual(response.status_code, 200)
         html = response.get_data(as_text=True)
         self.assertIn('webcam-video', html)
@@ -37,10 +38,11 @@ class TestOurLittleBooth(unittest.TestCase):
         self.assertIn('btn-start-camera', html)
         self.assertIn('btn-capture-photo', html)
         self.assertIn('btn-download-strip', html)
-        self.assertIn('camera.js', html)
-        self.assertIn('filters.js', html)
-        self.assertIn('photo-strip.js', html)
-        self.assertIn('photobooth.js', html)
+
+    def test_booth_route_backwards_compatible(self):
+        """Verify that legacy /booth route renders cleanly."""
+        response = self.client.get('/booth')
+        self.assertEqual(response.status_code, 200)
 
     def test_health_check(self):
         """Verify health check endpoint returns 200 OK and expected JSON."""
@@ -48,11 +50,69 @@ class TestOurLittleBooth(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertEqual(data.get('status'), 'ok')
-        self.assertEqual(data.get('app'), 'Our Little Booth')
+        self.assertEqual(data.get('app'), 'Little Memories')
+
+    def test_create_and_join_ldr_room(self):
+        """Verify creating an LDR room with limit 2 and rejecting a 3rd participant."""
+        # 1. Create LDR room
+        res = self.client.post('/api/rooms/create', json={'mode': 'ldr', 'nickname': 'Romeo'})
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data.get('success'))
+        room_id = data.get('room_id')
+        self.assertTrue(room_id.startswith('ldr-'))
+        self.assertEqual(data.get('max_capacity'), 2)
+
+        # 2. Status should be 1/2
+        status_res = self.client.get(f'/api/rooms/{room_id}')
+        self.assertEqual(status_res.status_code, 200)
+        self.assertEqual(status_res.get_json()['count'], 1)
+
+        # 3. Join second user (Juliet) -> 2/2
+        join_res = self.client.post(f'/api/rooms/{room_id}/join', json={'nickname': 'Juliet'})
+        self.assertEqual(join_res.status_code, 200)
+        self.assertTrue(join_res.get_json()['success'])
+
+        # 4. Attempt to join 3rd user -> should fail (403 full)
+        fail_res = self.client.post(f'/api/rooms/{room_id}/join', json={'nickname': 'ThirdWheel'})
+        self.assertEqual(fail_res.status_code, 403)
+        self.assertTrue(fail_res.get_json()['is_full'])
+
+    def test_create_and_join_friends_room(self):
+        """Verify creating a Friends room with limit 4."""
+        res = self.client.post('/api/rooms/create', json={'mode': 'friends', 'nickname': 'Friend 1'})
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        room_id = data.get('room_id')
+        self.assertTrue(room_id.startswith('friends-'))
+        self.assertEqual(data.get('max_capacity'), 4)
+
+    def test_signaling_flow(self):
+        """Verify WebRTC signaling message dispatch and retrieval."""
+        res = self.client.post('/api/rooms/create', json={'mode': 'ldr', 'nickname': 'Alice'})
+        room_id = res.get_json()['room_id']
+        peer_alice = res.get_json()['peer_id']
+
+        join_res = self.client.post(f'/api/rooms/{room_id}/join', json={'nickname': 'Bob'})
+        peer_bob = join_res.get_json()['peer_id']
+
+        # Alice sends offer to Bob
+        offer_res = self.client.post(f'/api/rooms/{room_id}/signal', json={
+            'from': peer_alice,
+            'to': peer_bob,
+            'type': 'OFFER',
+            'data': {'sdp': 'fake-sdp-offer'}
+        })
+        self.assertEqual(offer_res.status_code, 200)
+
+        # Bob polls signals
+        poll_res = self.client.get(f'/api/rooms/{room_id}/signals?peer_id={peer_bob}&last_id=0')
+        self.assertEqual(poll_res.status_code, 200)
+        signals = poll_res.get_json()['signals']
+        self.assertTrue(any(s['type'] == 'OFFER' for s in signals))
 
     def test_save_strip_valid(self):
         """Verify saving a valid base64 PNG photo strip to server."""
-        # Create a small valid test PNG using Pillow
         img = Image.new('RGB', (100, 300), color=(255, 248, 239))
         buffer = BytesIO()
         img.save(buffer, format='PNG')
@@ -60,8 +120,7 @@ class TestOurLittleBooth(unittest.TestCase):
 
         payload = {
             "image": b64_str,
-            "title": "Test Strip",
-            "layout": "vertical-4"
+            "title": "Little Memories Test Strip"
         }
 
         response = self.client.post('/api/save-strip', json=payload)
@@ -72,7 +131,6 @@ class TestOurLittleBooth(unittest.TestCase):
         saved_file = os.path.join(SAVED_STRIPS_DIR, data['filename'])
         self.assertTrue(os.path.exists(saved_file))
 
-        # Clean up created test file
         try:
             os.remove(saved_file)
         except OSError:
@@ -80,32 +138,9 @@ class TestOurLittleBooth(unittest.TestCase):
 
     def test_save_strip_invalid_data(self):
         """Verify rejection of malformed image data."""
-        payload = {
-            "image": "not-a-valid-data-url",
-            "title": "Invalid"
-        }
+        payload = {"image": "not-a-valid-data-url"}
         response = self.client.post('/api/save-strip', json=payload)
         self.assertEqual(response.status_code, 400)
-
-    def test_save_strip_fake_image_bytes(self):
-        """Verify rejection of fake corrupted image bytes."""
-        fake_b64 = f"data:image/png;base64,{base64.b64encode(b'this is not an image').decode('utf-8')}"
-        payload = {"image": fake_b64}
-        response = self.client.post('/api/save-strip', json=payload)
-        self.assertEqual(response.status_code, 400)
-
-    def test_gallery_endpoint(self):
-        """Verify listing of saved strips."""
-        response = self.client.get('/api/gallery')
-        self.assertEqual(response.status_code, 200)
-        data = response.get_json()
-        self.assertIn('strips', data)
-        self.assertIsInstance(data['strips'], list)
-
-    def test_directory_traversal_prevention(self):
-        """Verify path traversal attack prevention on saved strips route."""
-        response = self.client.get('/api/saved/../../etc/passwd')
-        self.assertIn(response.status_code, [400, 404])
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Photobooth Studio — Our Little Booth ♡{% endblock %}
+{% block title %}Friends Local Booth — Little Memories ♡{% endblock %}
 
 {% block content %}
 <div class="booth-page-container">
@@ -21,7 +21,7 @@
         </div>
 
         <div class="booth-top-center">
-            <h1 class="booth-heading">Our Little Studio</h1>
+            <h1 class="booth-heading">Friends Studio <span class="studio-subtag">Local Mode</span></h1>
         </div>
 
         <div class="booth-top-right">
@@ -88,7 +88,7 @@
                             <!-- Graceful fallback test mode if camera isn't attached -->
                             <div class="fallback-note">
                                 <span>No webcam available?</span>
-                                <button type="button" id="btn-use-mock-mode" class="btn-text-link">Use Virtual Sibling Poses (Demo Mode)</button>
+                                <button type="button" id="btn-use-mock-mode" class="btn-text-link">Use Virtual Poses (Demo Mode)</button>
                                 <span>or</span>
                                 <label for="upload-photo-input" class="btn-text-link cursor-pointer">Upload a Photo</label>
                                 <input type="file" id="upload-photo-input" accept="image/*" class="is-hidden" />
@@ -379,12 +379,12 @@
                 <!-- Custom Captions & Nicknames -->
                 <div class="customizer-group">
                     <label for="session-title-input" class="setting-label">Session Title / Header:</label>
-                    <input type="text" id="session-title-input" class="custom-input" placeholder="our little booth ♡" value="our little booth ♡" maxlength="35" />
+                    <input type="text" id="session-title-input" class="custom-input" placeholder="little memories ♡" value="little memories ♡" maxlength="35" />
                 </div>
 
                 <div class="customizer-group">
-                    <label for="siblings-nicknames-input" class="setting-label">Siblings' Nicknames:</label>
-                    <input type="text" id="siblings-nicknames-input" class="custom-input" placeholder="e.g. Ahmad & Sis" value="Ahmad & Sis" maxlength="30" />
+                    <label for="siblings-nicknames-input" class="setting-label">Friends' Nicknames:</label>
+                    <input type="text" id="siblings-nicknames-input" class="custom-input" placeholder="e.g. Besties Forever" value="Besties ♡" maxlength="30" />
                 </div>
 
                 <div class="customizer-group">
