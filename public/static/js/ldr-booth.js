@@ -243,6 +243,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
     }
 
+    // 7 Explicit Connection States UI Controller
+    const ConnectionStateUI = {
+        STATE_CREATING: 'creating',
+        STATE_WAITING: 'waiting',
+        STATE_JOINED: 'joined',
+        STATE_CONNECTING_MEDIA: 'connecting_media',
+        STATE_CONNECTED: 'connected',
+        STATE_FAILED: 'failed',
+        STATE_DISCONNECTED: 'disconnected',
+
+        current: 'waiting',
+
+        set(state, data = {}) {
+            this.current = state;
+            const statusText = document.getElementById('session-status-text');
+            const dot = document.getElementById('connection-dot');
+            const placeholder = document.getElementById('remote-placeholder');
+            const placeholderText = document.getElementById('remote-placeholder-text');
+            const remoteNick = document.getElementById('remote-nickname-display');
+            const name = data.name || partnerName || 'Partner';
+
+            switch (state) {
+                case this.STATE_CREATING:
+                    if (statusText) statusText.textContent = 'Creating room...';
+                    if (dot) dot.style.background = '#F0AD4E';
+                    break;
+
+                case this.STATE_WAITING:
+                    if (statusText) statusText.textContent = `Room: ${roomId} • Waiting for partner...`;
+                    if (dot) dot.style.background = '#999999';
+                    if (remoteNick) remoteNick.textContent = 'Waiting for your sweetheart...';
+                    if (placeholder) placeholder.classList.remove('is-hidden');
+                    if (placeholderText) placeholderText.textContent = 'Waiting for your favorite person to join...';
+                    break;
+
+                case this.STATE_JOINED:
+                    if (statusText) statusText.textContent = `${name} joined! Preparing media...`;
+                    if (dot) dot.style.background = '#F0AD4E';
+                    if (remoteNick) remoteNick.textContent = name;
+                    if (placeholder) placeholder.classList.remove('is-hidden');
+                    if (placeholderText) placeholderText.textContent = `${name} has joined! Connecting cameras...`;
+                    break;
+
+                case this.STATE_CONNECTING_MEDIA:
+                    if (statusText) statusText.textContent = `Connecting video with ${name}...`;
+                    if (dot) dot.style.background = '#F0AD4E';
+                    if (remoteNick) remoteNick.textContent = name;
+                    if (placeholder) placeholder.classList.remove('is-hidden');
+                    if (placeholderText) placeholderText.textContent = `Establishing live video stream with ${name}...`;
+                    break;
+
+                case this.STATE_CONNECTED:
+                    if (statusText) statusText.textContent = `Connected with ${name} ❤️`;
+                    if (dot) dot.style.background = '#5CB85C';
+                    if (remoteNick) remoteNick.textContent = name;
+                    if (placeholder) placeholder.classList.add('is-hidden');
+                    break;
+
+                case this.STATE_FAILED:
+                    if (statusText) statusText.textContent = `Connection failed. Retrying...`;
+                    if (dot) dot.style.background = '#D9534F';
+                    if (placeholder) placeholder.classList.remove('is-hidden');
+                    if (placeholderText) placeholderText.textContent = `Video connection dropped. Attempting to reconnect...`;
+                    break;
+
+                case this.STATE_DISCONNECTED:
+                    if (statusText) statusText.textContent = `${name} left the room`;
+                    if (dot) dot.style.background = '#D9534F';
+                    if (remoteNick) remoteNick.textContent = `${name} (Offline)`;
+                    if (placeholder) placeholder.classList.remove('is-hidden');
+                    if (placeholderText) placeholderText.textContent = `${name} has left. Waiting for them to return...`;
+                    break;
+            }
+            console.log(`[ConnectionStateUI] State -> ${state}`, data);
+        }
+    };
+
     let webrtc = null;
 
     async function initRoom() {
@@ -255,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localVideo.setAttribute('webkit-playsinline', '');
 
         if (!roomId) {
+            ConnectionStateUI.set(ConnectionStateUI.STATE_CREATING);
             // Prompt to create or join room
             const code = prompt('Enter LDR Room Code (or leave empty to create new room):', '');
             if (code && code.trim()) {
@@ -273,25 +351,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // If not already registered peerId, join room
-        if (!peerId) {
-            const joinResp = await fetch(`/api/rooms/${roomId}/join`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname: nickname })
-            });
-            const joinData = await joinResp.json();
-            if (!joinResp.ok) {
-                alert(joinData.error || 'Failed to join room');
-                window.location.href = '/';
-                return;
-            }
-            peerId = joinData.peer_id;
-            isHost = false;
+        // Retrieve or generate persistent peer session for this room
+        const sessionKey = `ldr_session_${roomId}`;
+        let savedSession = {};
+        try {
+            savedSession = JSON.parse(sessionStorage.getItem(sessionKey) || '{}');
+        } catch (e) {}
+
+        if (!peerId && savedSession.peerId) {
+            peerId = savedSession.peerId;
+            nickname = savedSession.nickname || nickname;
+            isHost = !!savedSession.isHost;
         }
 
-        sessionStatusText.textContent = `Room: ${roomId}`;
-        connectionDot.className = 'badge-dot';
+        ConnectionStateUI.set(ConnectionStateUI.STATE_WAITING);
+
+        // Register / Join room
+        const joinResp = await fetch(`/api/rooms/${roomId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nickname: nickname,
+                peer_id: peerId || undefined
+            })
+        });
+        const joinData = await joinResp.json();
+        if (!joinResp.ok) {
+            alert(joinData.error || 'Failed to join room');
+            window.location.href = '/';
+            return;
+        }
+
+        peerId = joinData.peer_id;
+        if (joinData.reconnected) {
+            console.log('[LDR Studio] Successfully reconnected with existing peer ID:', peerId);
+        }
+
+        // Save session in sessionStorage
+        try {
+            sessionStorage.setItem(sessionKey, JSON.stringify({
+                peerId: peerId,
+                nickname: nickname,
+                isHost: isHost
+            }));
+        } catch (e) {}
+
+        // Check if partner is already in room from join response
+        if (Array.isArray(joinData.participants)) {
+            const partner = joinData.participants.find(p => p.id !== peerId);
+            if (partner) {
+                partnerName = partner.name;
+                ConnectionStateUI.set(ConnectionStateUI.STATE_JOINED, { name: partnerName });
+            }
+        }
 
         webrtc = new WebRTCRoomManager({
             roomId: roomId,
@@ -301,25 +413,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             isHost: isHost,
             onPeerJoined: (remoteId, name) => {
                 partnerName = name;
-                remoteNickDisplay.textContent = name;
-                sessionStatusText.textContent = `${name} joining room...`;
-                connectionDot.style.background = '#F0AD4E';
+                ConnectionStateUI.set(ConnectionStateUI.STATE_JOINED, { name: partnerName });
                 showToast(`${name} joined your private room! Connecting live video...`, '💌');
                 SoundEffects.playSuccess();
             },
             onPeerLeft: (remoteId, name) => {
-                remotePlaceholder.classList.remove('is-hidden');
-                remotePlaceholderText.textContent = `${name} has left the room. Waiting for return...`;
-                remoteNickDisplay.textContent = 'Partner Disconnected';
-                sessionStatusText.textContent = 'Alone in room';
-                connectionDot.style.background = '#D9534F';
-                showToast(`${name} disconnected`, '⚠️');
+                ConnectionStateUI.set(ConnectionStateUI.STATE_DISCONNECTED, { name: name || partnerName });
+                showToast(`${name || partnerName} disconnected`, '⚠️');
             },
             onRemoteStream: (remoteId, stream, name) => {
                 console.log('[LDR Studio] Received remote stream tracks:', stream.getTracks().map(t => `${t.kind}:${t.readyState}`));
                 partnerName = name || partnerName;
-                remoteNickDisplay.textContent = partnerName;
-                remotePlaceholder.classList.add('is-hidden');
 
                 if (remoteVideo.srcObject !== stream) {
                     remoteVideo.srcObject = stream;
@@ -331,6 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
                         console.log('[LDR Studio] Remote video playing with sound.');
+                        ConnectionStateUI.set(ConnectionStateUI.STATE_CONNECTED, { name: partnerName });
                         hideAudioUnmutePrompt();
                     }).catch(err => {
                         console.warn('[LDR Studio] Unmuted video play blocked by browser policy:', err.name);
@@ -338,6 +443,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         remoteVideo.muted = true;
                         remoteVideo.play().then(() => {
                             console.log('[LDR Studio] Remote video playing muted to bypass autoplay policy.');
+                            ConnectionStateUI.set(ConnectionStateUI.STATE_CONNECTED, { name: partnerName });
                             showAudioUnmutePrompt();
                         }).catch(e => console.error('[LDR Studio] Failed playing remote video even muted:', e));
                     });
@@ -346,16 +452,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             onConnectionState: (remoteId, connState) => {
                 console.log(`[LDR Studio] P2P Connection state: ${connState}`);
                 if (connState === 'connected') {
-                    sessionStatusText.textContent = `Connected with ${partnerName} ❤️`;
-                    connectionDot.style.background = '#5CB85C';
-                    remotePlaceholder.classList.add('is-hidden');
+                    ConnectionStateUI.set(ConnectionStateUI.STATE_CONNECTED, { name: partnerName });
                     showToast(`Live video connected with ${partnerName}! ❤️`, '🎉');
                 } else if (connState === 'connecting') {
-                    sessionStatusText.textContent = `Connecting with ${partnerName}...`;
-                    connectionDot.style.background = '#F0AD4E';
+                    ConnectionStateUI.set(ConnectionStateUI.STATE_CONNECTING_MEDIA, { name: partnerName });
                 } else if (connState === 'failed' || connState === 'disconnected') {
-                    sessionStatusText.textContent = `Connection lost. Reconnecting...`;
-                    connectionDot.style.background = '#D9534F';
+                    ConnectionStateUI.set(ConnectionStateUI.STATE_FAILED, { name: partnerName });
                 }
             },
             onDiagnosticsUpdate: (diag) => {

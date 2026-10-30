@@ -78,6 +78,21 @@ class TestLittleMemories(unittest.TestCase):
         self.assertEqual(fail_res.status_code, 403)
         self.assertTrue(fail_res.get_json()['is_full'])
 
+        # 5. Existing user (Juliet) refreshes / reconnects with her peer_id -> should succeed (200)
+        juliet_peer = join_res.get_json()['peer_id']
+        reconnect_res = self.client.post(f'/api/rooms/{room_id}/join', json={'nickname': 'Juliet', 'peer_id': juliet_peer})
+        self.assertEqual(reconnect_res.status_code, 200)
+        self.assertTrue(reconnect_res.get_json()['reconnected'])
+        self.assertEqual(reconnect_res.get_json()['peer_id'], juliet_peer)
+
+    def test_serverless_rehydration(self):
+        """Verify that serverless cold starts gracefully re-hydrate rooms with valid prefixes."""
+        res = self.client.get('/api/rooms/ldr-coldstart123')
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data.get('exists'))
+        self.assertEqual(data.get('mode'), 'ldr')
+
     def test_create_and_join_friends_room(self):
         """Verify creating a Friends room with limit 4."""
         res = self.client.post('/api/rooms/create', json={'mode': 'friends', 'nickname': 'Friend 1'})

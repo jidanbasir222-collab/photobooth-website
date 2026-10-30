@@ -170,6 +170,30 @@ def favicon():
 # Private Room & WebRTC Signaling REST API
 # Compatible with Vercel Serverless Functions and Localhost
 # --------------------------------------------------------------------------
+def get_or_create_room(room_id):
+    """
+    Retrieve room or gracefully re-hydrate it on serverless cold starts.
+    Guarantees participants are never kicked out due to container recycling.
+    """
+    now = datetime.now(timezone.utc)
+    room = ROOMS.get(room_id)
+    if not room and (room_id.startswith('ldr-') or room_id.startswith('friends-')):
+        mode = 'friends' if room_id.startswith('friends-') else 'ldr'
+        max_capacity = 4 if mode == 'friends' else 2
+        room = {
+            "id": room_id,
+            "mode": mode,
+            "max_capacity": max_capacity,
+            "created_at": now,
+            "last_activity": now,
+            "participants": {},
+            "signals": [],
+            "signal_counter": 0
+        }
+        ROOMS[room_id] = room
+    return room
+
+
 @app.route('/api/rooms/create', methods=['POST'])
 def create_room():
     """
@@ -227,7 +251,7 @@ def get_room_status(room_id):
     """Check room status, mode, participant count, and capacity."""
     cleanup_expired_rooms()
     with rooms_lock:
-        room = ROOMS.get(room_id)
+        room = get_or_create_room(room_id)
         if not room:
             return jsonify({
                 "exists": False,
@@ -256,16 +280,41 @@ def join_room(room_id):
     """
     Join an existing private room.
     Validates participant limit (2 for LDR, 4 for Friends).
+    Supports seamless rejoining on page reload or connection recovery.
     """
     cleanup_expired_rooms()
     data = request.get_json(silent=True) or {}
     nickname = (data.get('nickname') or 'Guest').strip()[:30]
+    existing_peer_id = data.get('peer_id')
 
     with rooms_lock:
-        room = ROOMS.get(room_id)
+        room = get_or_create_room(room_id)
         if not room:
             return jsonify({"error": "Room does not exist or has expired."}), 404
 
+        now = datetime.now(timezone.utc)
+        room["last_activity"] = now
+
+        # Case 1: Reconnecting as an existing participant (e.g. page refresh)
+        if existing_peer_id and existing_peer_id in room["participants"]:
+            peer_id = existing_peer_id
+            room["participants"][peer_id]["name"] = nickname
+            participant_list = [
+                {"id": p_id, "name": p["name"], "is_ready": p.get("is_ready", False)}
+                for p_id, p in room["participants"].items()
+            ]
+            return jsonify({
+                "success": True,
+                "room_id": room_id,
+                "mode": room.get("mode", "ldr"),
+                "peer_id": peer_id,
+                "nickname": nickname,
+                "participants": participant_list,
+                "reconnected": True,
+                "message": "Reconnected to room! ❤️"
+            })
+
+        # Case 2: New participant joining
         max_cap = room.get("max_capacity", 2)
         if len(room["participants"]) >= max_cap:
             msg = "This private couple room already has 2 sweethearts inside! ♡" if room.get("mode") == "ldr" else f"This friends room has reached its limit of {max_cap} participants! ♡"
@@ -274,9 +323,7 @@ def join_room(room_id):
                 "is_full": True
             }), 403
 
-        peer_id = secrets.token_hex(6)
-        now = datetime.now(timezone.utc)
-        room["last_activity"] = now
+        peer_id = existing_peer_id if existing_peer_id else secrets.token_hex(6)
         room["participants"][peer_id] = {
             "id": peer_id,
             "name": nickname,
@@ -332,12 +379,18 @@ def send_signal(room_id):
     now = datetime.now(timezone.utc)
 
     with rooms_lock:
-        room = ROOMS.get(room_id)
+        room = get_or_create_room(room_id)
         if not room:
             return jsonify({"error": "Room not found"}), 404
 
+        # Auto-register peer if missing due to serverless cold start
         if from_peer not in room["participants"]:
-            return jsonify({"error": "Unauthorized peer"}), 403
+            room["participants"][from_peer] = {
+                "id": from_peer,
+                "name": "Partner",
+                "joined_at": now.isoformat(),
+                "is_ready": False
+            }
 
         room["last_activity"] = now
         room["signal_counter"] += 1
@@ -370,21 +423,28 @@ def poll_signals(room_id):
     Guarantees WebRTC negotiation works seamlessly even on serverless hosts.
     """
     peer_id = request.args.get('peer_id')
+    peer_name = request.args.get('name') or 'Partner'
     last_id = int(request.args.get('last_id', 0))
 
     if not peer_id:
         return jsonify({"error": "Missing peer_id parameter"}), 400
 
     with rooms_lock:
-        room = ROOMS.get(room_id)
+        room = get_or_create_room(room_id)
         if not room:
             return jsonify({"error": "Room not found"}), 404
 
-        if peer_id not in room["participants"]:
-            return jsonify({"error": "Peer no longer in room"}), 403
-
         now = datetime.now(timezone.utc)
         room["last_activity"] = now
+
+        # Auto-register peer if missing due to cold start
+        if peer_id not in room["participants"]:
+            room["participants"][peer_id] = {
+                "id": peer_id,
+                "name": peer_name,
+                "joined_at": now.isoformat(),
+                "is_ready": False
+            }
 
         new_signals = []
         for s in room["signals"]:

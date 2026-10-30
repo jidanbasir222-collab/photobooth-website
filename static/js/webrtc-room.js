@@ -39,6 +39,7 @@ class WebRTCRoomManager {
         this.iceQueues = {};        // remotePeerId -> [RTCIceCandidateInit]
         this.dataChannels = {};     // remotePeerId -> RTCDataChannel
         this.makingOffer = {};      // remotePeerId -> boolean
+        this.currentParticipants = {}; // remotePeerId -> participant object
         this.facingMode = 'user';
         this.isMuted = false;
         this.isVideoOff = false;
@@ -200,7 +201,7 @@ class WebRTCRoomManager {
     async pollSignals() {
         if (!this.roomId || !this.peerId || !this.isPolling) return;
         try {
-            const resp = await fetch(`/api/rooms/${this.roomId}/signals?peer_id=${this.peerId}&last_id=${this.lastSignalId}`);
+            const resp = await fetch(`/api/rooms/${this.roomId}/signals?peer_id=${this.peerId}&name=${encodeURIComponent(this.nickname)}&last_id=${this.lastSignalId}`);
             if (!resp.ok) {
                 if (resp.status === 404 || resp.status === 403) {
                     console.warn(`[WebRTC Signaling] Room or peer status warning (${resp.status})`);
@@ -208,6 +209,11 @@ class WebRTCRoomManager {
                 return;
             }
             const data = await resp.json();
+
+            // Authoritative participant synchronization
+            if (data.participants) {
+                this.syncParticipants(data.participants);
+            }
 
             this.lastSignalId = data.last_id || this.lastSignalId;
             if (data.signals && data.signals.length > 0) {
@@ -217,6 +223,60 @@ class WebRTCRoomManager {
             }
         } catch (e) {
             // Transient network retry
+        }
+    }
+
+    /**
+     * Authoritative participant list synchronization
+     * Guarantees partner detection even if ephemeral signals are delayed or dropped
+     */
+    syncParticipants(participantsList = []) {
+        if (!Array.isArray(participantsList)) return;
+        const currentIds = new Set();
+
+        participantsList.forEach(p => {
+            if (p.id === this.peerId) return;
+            currentIds.add(p.id);
+
+            if (!this.currentParticipants[p.id]) {
+                this.currentParticipants[p.id] = p;
+                console.log(`[WebRTC Sync] Detected partner from participant list: ${p.name} (${p.id})`);
+                this.onPeerJoined(p.id, p.name);
+
+                // If host, initiate connection offer if not already connected
+                if (this.isHost && !this.peerConnections[p.id]) {
+                    const pc = this.createPeerConnection(p.id, p.name);
+                    this.ensureTracksAdded(pc);
+                    this.initiateOffer(p.id, pc);
+                }
+            }
+        });
+
+        // Detect participants who have left
+        Object.keys(this.currentParticipants).forEach(id => {
+            if (!currentIds.has(id)) {
+                const p = this.currentParticipants[id];
+                console.log(`[WebRTC Sync] Partner left room (absent from list): ${p.name} (${id})`);
+                delete this.currentParticipants[id];
+                this.closePeer(id);
+                this.onPeerLeft(id, p.name);
+            }
+        });
+    }
+
+    async initiateOffer(remotePeerId, pc) {
+        if (this.makingOffer[remotePeerId]) return;
+        try {
+            this.makingOffer[remotePeerId] = true;
+            console.log(`[WebRTC] Initiating SDP Offer for ${remotePeerId}...`);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            console.log(`[WebRTC] LocalDescription (Offer) set, sending to ${remotePeerId}...`);
+            this.sendSignal('OFFER', { sdp: pc.localDescription }, remotePeerId);
+        } catch (e) {
+            console.error('[WebRTC] Error initiating offer:', e);
+        } finally {
+            this.makingOffer[remotePeerId] = false;
         }
     }
 
